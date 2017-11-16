@@ -113,8 +113,10 @@ Here are a few pointers:
 - https://golang.org/doc/code.html
 - https://tour.golang.org
 - https://golang.org/doc/effective_go.html
-- http://dave.cheney.net/resources-for-new-go-programmers
+- https://dave.cheney.net/resources-for-new-go-programmers
 - https://gobyexample.com
+- https://greatercommons.com/cwg
+- https://learn-golang.com/
 
 For more advanced topics:
 
