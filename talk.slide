@@ -1,0 +1,1946 @@
+Introduction to Go
+Go Workshop@Marseille, 2017-11-20
+
+Sébastien Binet
+CNRS/IN2P3/LPC
+binet@clermont.in2p3.fr
+@0xb1ns
+
+* Prelude
+
+* Prelude
+
+Sources and resources for this workshop are here:
+
+.link https://github.com/sbinet/margo-2017
+
+
+License: BSD-3.
+
+* Background
+
+# In this tutorial I'll show you how to install and use the Go Programming Language.
+
+* What is Go?
+
+Go is a new, general-purpose programming language.
+
+- Compiled
+- Statically typed
+- Concurrent
+- Simple
+- Productive
+
+"Go is a wise, clean, insightful, fresh thinking approach to the greatest-hits subset of the well understood."
+- Michael T. Jones
+
+
+* History
+
+- Project starts at Google in 2007 (by Griesemer, Pike, Thompson)
+- Open source release in November 2009
+- More than 700 contributors have joined the project
+- Version 1.0 release in March 2012
+- Version 1.1 release in May 2013
+- Version 1.2 release in December 2013
+- _[...]_
+- Version 1.7 release in August 2016
+- Version 1.8 release in February 2017
+- Version 1.9 release in August 2017
+
+.link https://golang.org
+
+* Getting started
+
+* Install Go
+
+.link https://golang.org/doc/install
+
+- Install from binary distributions or build from source
+- 32- and 64-bit x86 and ARM processors
+- Windows, Mac OS X, Linux, and FreeBSD
+- Other platforms may be supported by `gccgo`
+
+# Go is available in binary form for Windows, Mac OS X, Linux, and FreeBSD running under 32 and 64-bit x86 processor architectures. To install Go on these systems, download the appropriate file from golang.org and either open the package installer (Windows or OS X) or extract the archive to /usr/local/go (Linux and FreeBSD).  
+
+# If you use a different operating system or processor architecture, you may still be able to use Go by building it from source or using gccgo (an alternate Go compiler based on the GNU C Compiler). See the installation instructions on golang.org for how to do this.
+
+* Test your Go installation
+
+# Let's build and run a simple Go program to check that we have a valid Go install. Create a file named hello.go somewhere convenient and populate it with this Go source code:
+
+Put this code into `hello.go`:
+
+.play _code/hello-00.go
+
+# Now, from a command prompt, run `go run hello.go`. This will build your program, storing the executable binary in a temporary location, and run it. You should see the greeting printed to the console.
+
+Run the program:
+
+  $ go run hello.go
+  Hello Marseille-2017
+
+
+* The go tool
+
+The `go` tool is the standard tool for building, testing, and installing Go programs.
+
+Compile and run `hello.go`:
+
+  $ go run hello.go
+
+Run `zip` tests:
+
+  $ go test archive/zip
+  ok  	archive/zip	19.557s
+
+Build and format the files in the current directory:
+
+  $ go build
+  $ gofmt -w .
+
+Fetch and install `websocket`:
+
+  $ go get golang.org/x/net/websocket
+
+* Workspaces
+
+The `go` tool derives build instructions from Go source code.
+
+There's no need to write and maintain build scripts.
+
+For this to work, some prescribed directory structure, known as a workspace, is required.
+
+  workspace/
+    bin # executable binaries
+    pkg # compiled object files
+    src # source code
+
+
+* Create a workspace
+
+Create your workspace now.
+
+  $ mkdir -p $HOME/go/src
+
+(The `bin` and `pkg` sub-directories will be created by the `go` tool.)
+
+Tell the `go` tool where your workspace is by setting the `GOPATH` environment variable:
+# You can do this on OS X, Linux, and FreeBSD by adding this line to the `$HOME/.profile` and re-starting any running shells:
+
+  export GOPATH=$HOME/go
+
+# See the installation instructions at golang.org for how to set `GOPATH` under Windows.
+
+You may also want to add the `bin` sub-directory of your workspace to your `PATH`:
+
+  export PATH=$PATH:$GOPATH/bin
+
+This lets you run your Go programs without specifying their full path.
+
+(You may want to put these `export` commands in the `.bash_profile` file in your home directory.)
+
+* Choose a namespace
+
+Choose a special place for your Go code.
+
+I use `"github.com/sbinet"`, the root of my GitHub account (useful with `go get`).
+
+For this tutorial, let us all use `"github.com/margo"`
+
+# Once you have chosen a namespace, create the required paths inside the `src` directory of your workspace:
+
+  $ mkdir -p $GOPATH/src/github.com/margo
+
+Create a `hello` directory in your namespace and copy `hello.go` there:
+  
+  $ mkdir $GOPATH/src/github.com/margo/hello
+  $ cp hello.go $GOPATH/src/github.com/margo/hello/main.go
+
+* Choose a namespace - II
+
+Now you can build and install the `hello` program with the `go` tool:
+
+  $ go get github.com/margo/hello
+
+This builds an executable named `hello`, and installs it under the `bin` directory of your workspace.
+
+  $ $GOPATH/bin/hello
+  Hello Marseille-2017
+
+* Go - first concepts
+
+* Hello world 2.0
+
+.play _code/hello-web.go
+
+* Hello world 1.0
+
+.play _code/hello-00.go
+
+- `package`
+- `func`
+- `println` builtin function
+
+* Go types
+
+- primitive types
+
+	int, uint, uint8, ..., uint64, int8, ... int64
+	bool, string
+	float32, float64
+	complex64, complex128
+
+- structs
+
+	struct {
+		Name string
+		Age  int
+	}
+
+- arrays and slices
+
+	[3]string, []float64
+
+- maps
+
+	map[string]int
+
+* Kinds of types (continued)
+
+- pointers
+
+	*int, *Person
+
+- functions
+
+	func(int, int) int
+	func(int, float64) (float64, error)
+
+- channels
+
+	chan bool
+
+- interfaces
+
+	interface {
+		Start()
+		Stop()
+	}
+
+* Type declarations
+
+	type [name] [specification]
+
+`Person` is a `struct` type.
+
+	type Person struct {
+		Name string
+		Age  int
+	}
+
+`Celsius` is a `float64` type.
+
+	type Celsius float64
+
+* Function declarations
+
+	func [name] ([params]) [return value]
+	func [name] ([params]) ([return values])
+
+A sum function:
+
+	func sum(a int, b int) int {
+		return a + b
+	}
+
+A function with multiple return values:
+
+	func divMod(a, b int) (int, int) {
+		return a / b, a % b
+	}
+
+Made clearer by naming the return values:
+
+	func divMod(a, b int) (quo, rem int) {
+		return a / b, a % b
+	}
+
+
+* Declaring variables
+
+Normal declaration:
+
+    var text string = "hello"
+
+You can omit types:
+
+    var text = "hello"
+
+And inside of functions:
+
+    text := "hello"
+
+Other types
+
+    a := 0                        // int
+    b := true                     // boolean
+    f := 1.0                      // float64
+    p := Person{"Sébastien", 37}  // Person{Name string; Age int}
+
+* No implicit numeric conversion
+
+Given types:
+
+    type Celsius float64
+
+    type Fahrenheit float64
+
+And the variables:
+
+    var freezing Fahrenheit = 32
+    var boiling Celsius = 100
+
+This code won't compile:
+
+    sauna := (freezing + boiling) / 2
+
+There's no implicit numeric conversion in Go.
+
+* Pointers and memory allocation
+
+* Pointers
+
+Go has pointers:
+
+    var p *int
+    p = new(int)
+
+But no pointer arithmetics:
+
+    var p *int = &a[0]
+    var q = p+2            // invalid
+
+There's `new` but there's no `delete`.
+
+Memory is garbaged collected after it's no longer accessible.
+
+* Memory allocation
+
+The compiler decides where to allocate based on escape analysis.
+
+Using `new` doesn't imply using the heap:
+
+`stack.go`:
+
+    func get() int {
+        n := new(int)
+        return *n
+    }
+
+And not all values in the heap are created with `new`:
+
+`heap.go`:
+
+    func get() *int {
+        n := 4
+        return &n
+    }
+
+
+* Packages & Imports
+
+Every [[https://golang.org/][Go]] program is made up of packages.
+
+Programs start running in `package` `main`.
+
+This program is using the packages with import paths `"fmt"` and `"math/rand"`.
+
+By convention, the package name is the same as the last element of the import path.
+For instance, the `"math/rand"` package comprises files that begin with the statement `package` `rand`.
+
+.play _code/packages.go
+
+
+* Exported names
+
+In [[https://golang.org/][Go]], a name is *exported* if it begins with a *capital* *letter*.
+For example, `Pizza` is an exported name, as is `Pi`, which is exported from the `math` package.
+
+`pizza` and `pi` do not start with a capital letter, so they are not exported.
+
+When importing a package, you can refer only to its exported names.
+Any "unexported" names are not accessible from outside the package.
+
+Run the code. Notice the error message.
+
+.play _code/exported-names.go
+
+* ex-01: a program printing out its arguments
+
+Create `$GOPATH/src/github.com/margo/ex-01/main.go` with the following content:
+
+.code _code/ex-01.go
+
+  ## build and install ex-01
+  $ go get github.com/margo/ex-01
+  
+  ## run ex-01:
+  $ ex-01 foo bar baz 01234
+  args: [ex-01 foo bar baz 01234]
+
+  $ `which ex-01` foo bar baz 01234 
+  args: [/home/me/go/bin/ex-01 foo bar baz 01234]
+
+* Interlude: godoc
+
+Browsing documentation is performed with `godoc`.
+
+  $ godoc os | less
+
+  PACKAGE DOCUMENTATION
+
+  package os
+    import "os"
+
+    Package os provides a platform-independent interface to operating system
+    functionality. The design is Unix-like, although the error handling is
+    Go-like; failing calls return values of type error rather than error
+    numbers. Often, more information is available within the error. For
+    example, if a call that takes a file name fails, such as Open or Stat,
+    the error will include the failing file name when printed and will be of
+    type *PathError, which may be unpacked for more information.
+
+
+* 
+
+  $ godoc os File | less
+
+
+  type File struct {
+      // contains filtered or unexported fields
+  }
+      File represents an open file descriptor.
+  
+  func Create(name string) (file *File, err error)
+      Create creates the named file mode 0666 (before umask), truncating it if
+      it already exists. If successful, methods on the returned File can be
+      used for I/O; the associated file descriptor has mode O_RDWR. If there
+      is an error, it will be of type *PathError.
+  
+  func Open(name string) (file *File, err error)
+      Open opens the named file for reading. If successful, methods on the
+      returned file can be used for reading; the associated file descriptor
+      has mode O_RDONLY. If there is an error, it will be of type *PathError.
+
+
+* 
+
+Also available from:
+
+.link https://golang.org/pkg
+
+.link https://golang.org/pkg/os
+
+.link https://godoc.org/os
+
+or locally:
+
+  $ godoc -http=:8080
+  $ open localhost:8080/pkg
+
+
+* ex-01 - II
+
+  $ godoc os Args
+
+  var Args []string
+      Args hold the command-line arguments, starting with the program name.
+
+
+Modify `ex-01` to iterate over this slice and print each argument (except the executable name) on a line, prefixed with its index number:
+
+  $ ex-01 foo baz
+  0: "foo"
+  1: "baz"
+
+(Make sure it still works when no argument is passed to the command)
+
+*Hint:* look for the `"range"` and `"for"` keywords on [[https://golang.org/doc/effective_go.html#for][Effective Go]].
+
+* ex-01 - II
+
+Solution on the next slide...
+
+* ex-01 - II (solution)
+
+.code _code/ex-01-index.go
+
+* ex-02 - a simple calculator
+
+Let's create a new `ex-02` program taking integers as arguments from the command line and returning their sum:
+
+  ## build+install ex-02
+  $ go get github.com/margo/ex-02
+  
+  $ ex-02 1 2 3 4 100
+  sum= 110
+
+  $ ex-02 1 2 3 4 100 01
+  sum= 111
+
+  $ ex-02 1 2 3 4 100 1.2
+  **error** strconv.ParseInt: parsing "1.2": invalid syntax
+
+*Hint:* `godoc` `strconv`
+
+* ex-02 - a simple calculator
+
+Solution on the next slide...
+
+* ex-02 - solution
+
+.code _code/ex-02.go
+
+
+* ex-02 - II
+
+Let's modify `ex-02` to take an optional `-v` argument to enable a verbose mode, displaying the running sum:
+
+  $ ex-02 -v 1 2 3 4 100
+  0
+  + 1 -> 1
+  + 2 -> 3
+  + 3 -> 6
+  + 4 -> 10
+  + 100 -> 110
+  ===============
+  sum= 110
+
+
+  $ ex-02 1 2 3 4 100
+  sum= 110
+
+*Hint:* `godoc` `flag`
+*Hint:* beware, correctly handle the extra `-v` argument.
+
+
+* ex-02 - II (solution)
+
+.code _code/ex-02-flag.go /^func main/,/^}/ HLflag
+
+
+* ex-03 - loops & functions
+
+As a simple way to play with functions and loops, implement the square root function using Newton's method.
+
+In this case, Newton's method is to approximate Sqrt(x) by picking a starting point z and then repeating:
+
+.image _figs/newton.png
+
+To begin with, just repeat that calculation 10 times and see how close you get to the answer for various values (1, 2, 3, ...).
+
+Next, change the loop condition to stop once the value has stopped changing (or only changes by a very small delta).
+See if that's more or fewer iterations.
+How close are you to the `math.Sqrt`?
+
+* ex-03 - loops & functions
+
+.play _code/ex-03-start.go
+
+* ex-03 - loops & functions
+
+Solution on the next slide...
+
+* ex-03 - loops & functions
+
+.play _code/ex-03-s1.go
+
+* ex-03 - loops & functions
+
+.play _code/ex-03-s2.go
+
+* ex-04 - rot13
+
+Let's create a new `rot13` package:
+
+  $ mkdir -p $GOPATH/src/github.com/margo/rot13
+
+- `rot13` will implement the Caesar cipher ("rotate by 13 places"):
+
+.link https://en.wikipedia.org/wiki/ROT13
+
+
+* ex-04 - rot13 - II
+
+- in that `rot13` package, create `rot13_test.go` with the following content:
+
+.code _code/rot13_test.go /STARTIMPORT OMIT/,/ENDIMPORT OMIT/ HLxxx
+
+
+* ex-04 - rot13 - III
+
+- in that `rot13` package, create `rot13_test.go` with the following content:
+
+.code _code/rot13_test.go /^func TestRot13/,/^}/ HLxxx
+
+
+* ex-04 - rot13 - IV
+
+- still in `rot13`, create `rot13.go` with the following content:
+
+  package rot13
+
+  func rot13(b byte) byte {
+       // ...
+  }
+
+- under this `rot13` transformation, `"hello"` should become `"uryyb"`
+
+- run:
+
+  $ go test -v
+  === RUN TestRot13
+  --- PASS: TestRot13 (0.00 seconds)
+  PASS
+  ok  	github.com/margo/rot13	0.002s
+  
+and modify the `rot13` function until the test passes.
+
+- `go` `test` builds and runs the tests in the local directory.
+
+* ex-04 - rot13 (solution)
+
+(next slide)
+
+* ex-04 - rot13 (solution)
+
+.code _code/rot13.go /STARTROT13-FUNC OMIT/,/ENDROT13-FUNC OMIT/
+
+
+* Interlude: Interfaces
+
+* Interfaces
+
+An interface type is defined as a set of method signatures.
+
+A value of interface type can hold any value that implements those methods.
+
+  type Abser interface {
+      Abs() float64
+  }
+  
+  type Reader interface {
+      Read(data []byte) (int, error)
+  }
+
+
+_E.g.:_ the type `MyFloat` implements the `Abser` interface:
+
+  type MyFloat float64
+  
+  func (f MyFloat) Abs() float64 {
+  	if f < 0 {
+  		return float64(-f)
+  	}
+  	return float64(f)
+  }
+
+* Interfaces
+
+Modify the code below to make `MyFloat` and `Vertex` implement the `Abser` interface:
+
+.play _code/ex-interfaces.go /STARTABSER OMIT/,/ENDABSER OMIT/
+
+* Interfaces
+
+A common pattern in `Go` is an `io.Reader` that wraps another `io.Reader`, modifying the stream in some way.
+
+A typical example is the `compress/gzip.NewReader` function which takes an `io.Reader` (a stream of gzipped data) and returns a `*gzip.Reader` that also implements `io.Reader` (a stream of the decompressed data).
+
+.code _code/gz-r.go /START OMIT/,/END OMIT/
+
+ $ cat $GOPATH/src/github.com/sbinet/margo-2017/testdata/data.gz | my-gunzip
+
+* ex-04 - V
+
+- create a new `ex-04` program with the following content:
+
+.code _code/ex-04.go HLxxx
+
+
+* ex-04 - VI
+
+- now, in `rot13.go` implement the `io.Reader` interface:
+
+.code _code/rot13.go /STARTROT13 OMIT/,/ENDROT13 OMIT/
+
+  func (r reader) Read(p []byte) (int, error) {
+       // ...
+  }
+
+- eventually, the following should work:
+
+  $ echo "hello" | ex-04
+  uryyb
+
+  $ echo "hello" | ex-04 | ex-04
+  hello
+
+
+* A (final) larger example
+
+
+* Top 10 identifiers in std library
+
+.code _code/idents.go
+
+  $ cat $(find $(go env GOROOT) -name '*.go') | ./idents | sort | uniq -c | sort -nr | sed 10q
+  4.76s user 3.66s system 134% cpu 6.27s total
+
+* A variation: Histogram of Go statements
+
+A histogram is a map from statement name ("if", "for", etc.) to use count:
+
+.code _code/histo0.go /histogram START/,/histogram END/
+
+Algorithm:
+
+- Use walkStdLib to traverse all files of the std library
+- For each file, parse and create abstract syntax tree
+- Traverse syntax tree and add each statement to histogram
+- Print the result
+
+.code _code/histo0.go /main START/,/main END/
+
+* A variation: Histogram of Go statements
+
+Let's create a new program called `indexer`.
+
+Initial code in: [[https://github.com/sbinet/margo-2017/blob/master/cmd/indexer/main.go][github.com/sbinet/margo-2017/cmd/indexer]]
+
+* Processing a Go source file
+
+.code _code/histo0.go /add START/,/add END/
+
+
+* Printing the histogram
+
+.play _code/histo0.go /print START/,/print END/
+
+Note: Histogram (map) iteration order is not specified.
+
+* Results (so far)
+
+  $ time indexer
+     0.  25.55%  53991  *ast.AssignStmt
+     1.   1.84%   3883  *ast.ForStmt
+     2.   0.06%    129  *ast.LabeledStmt
+     3.   1.10%   2325  *ast.BranchStmt
+     4.   0.60%   1259  *ast.SwitchStmt
+     5.   2.59%   5478  *ast.DeclStmt
+  [...]
+     9.  26.33%  55651  *ast.BlockStmt
+    10.  12.93%  27335  *ast.IfStmt
+    11.  11.72%  24759  *ast.ExprStmt
+    12.   2.66%   5617  *ast.CaseClause
+    13.   1.34%   2833  *ast.RangeStmt
+  [...]
+    18.   0.16%    348  *ast.GoStmt
+  indexer  2.95s user 0.07s system 108% cpu 2.78s total
+
+compared to:
+
+  $ cat $(find $(go env GOROOT) -name '*.go') | ./idents | sort | uniq -c | sort -nr | sed 10q
+  4.76s user 3.66s system 134% cpu 6.27s total
+
+* Sorting
+
+sort.Sort operates on any type that implements the sort.Interface:
+
+	interface {
+		Len() int
+		Swap(i, j int)
+		Less(i, j int) bool
+	}
+
+For instance, to sort a slice of strings lexically, define:
+
+.code _code/sort.go /lexical START/,/lexical END/
+
+And sort:
+
+	sort.Sort(lexical(s))  // where s is a []string slice
+
+
+* Sorting histogram entries
+
+.code _code/histo.go /byCount START/,/byCount END/
+
+
+* Improved histogram printing
+
+.play _code/histo.go /print START/,/print END/
+
+ 
+* Concurrency
+
+* Goroutines
+
+- The _go_ statement launches a function call as a goroutine
+	go f()
+	go f(x, y, ...)
+
+- A goroutine runs concurrently (but not necessarily in parallel)
+- A goroutine has its own stack
+
+
+* A simple example
+
+.code _code/concurrency1.go /f START/,/f END/
+
+Function f is launched as 3 different goroutines, all running concurrently:
+
+.play _code/concurrency1.go /main START/,/main END/
+
+
+* Communication via channels
+
+A channel type specifies a channel value type (and possibly a communication direction):
+
+	chan int
+	chan<- string  // send-only channel
+	<-chan T       // receive-only channel
+
+A channel is a variable of channel type:
+
+	var ch chan int
+	ch := make(chan int)  // declare and initialize with newly made channel
+
+A channel permits _sending_ and _receiving_ values:
+
+	ch <- 1   // send value 1 on channel ch
+	x = <-ch  // receive a value from channel ch (and assign to x)
+
+Channel operations synchronize the communicating goroutines.
+
+* Communicating goroutines
+
+Each goroutine sends its results via channel ch:
+
+.code _code/concurrency2.go /f START/,/f END/
+
+The main goroutine receives (and prints) all results from the same channel:
+
+.play _code/concurrency2.go /main START/,/main END/
+
+
+* Putting it all together
+
+
+* Analyze files concurrently, map-reduce style
+
+Mapper:
+
+.code _code/histop.go /mapper START/,/mapper END/
+
+Reducer:
+
+.code _code/histop.go /reducer START/,/reducer END/
+
+.code _code/histop.go /merge START/,/merge END/
+
+
+* From sequential program...
+
+.play _code/histo.go /main START/,/main END/
+
+
+* ... to concurrent program
+
+.play _code/histop.go /main START/,/main END/
+
+
+* Interlude: Calling C
+
+* cgo
+
+[[https://golang.org/][Go]] has a convenient way to call `C`:
+
+.play _code/cgo.go
+
+
+* cgo - II
+
+It is also possible to combine `Go` and `C` sources together inside a single package:
+
+  $> mkdir $GOPATH/src/github.com/margo/my-cgo
+
+Inside this new package, put 3 files: `main.go`, `my-cgo-lib.h`, `my-cgo-lib.c`.
+
+`main.go:`
+.code _code/my-cgo-main.go
+
+* cgo - III
+
+`my-cgo-lib.h:`
+.code _code/my-cgo-lib.h
+
+`my-cgo-lib.c:`
+.code _code/my-cgo-lib.c
+
+* cgo - IV
+
+And build/install like so:
+
+  $> go get -v github.com/margo/my-cgo
+  github.com/margo/my-cgo
+  
+  $> my-cgo
+  Hello From C
+
+
+For more informations: [[https://golang.org/cmd/cgo/][cmd/cgo]]
+
+* Go, WebSockets, WebServers and Concurrency
+
+* Introduction to web servers in Go
+
+In this hands-on session, we'll see how to write and develop web servers in `Go`.
+
+* Hello World - 2.0
+
+Writing a web server in `Go` is possible, using only the packages from the
+standard library:
+
+  package main
+  
+  import (
+          "fmt"
+          "log"
+          "net/http"
+  )
+  
+  func main() {
+          fmt.Println("please connect to localhost:7777/hello")
+          http.HandleFunc("/hello", HelloServer)
+          log.Fatal(http.ListenAndServe(":7777", nil))
+  }
+  
+  func HelloServer(w http.ResponseWriter, req *http.Request) {
+          log.Println(req.URL)
+          fmt.Fprintf(w, "Hello, world!\nURL = %s\n", req.URL)
+  }
+
+
+* 
+
+Compiling the previous code and running it in one terminal:
+
+  $> go run ./hello-web.go
+
+while running this command in another terminal:
+
+  $> curl http://localhost:7777/hello
+  Hello, world!
+  URL = /hello
+
+shows how simple writing a web server is in `Go`.
+
+* 
+
+Let's go through the code a bit.
+
+The `main` function first registers a `HandleFunc` with the default HTTP server
+in the `net/http` package.
+It binds the function `HelloServer` with the end-point `"/hello"` for that
+server.
+
+Next, the server and its infinite `for-loop` are launched _via_ the call to
+the `http.ListenAndServe` function: we instruct the `http` package to use
+the default `http.Handler` (with the second `nil` argument) and to listen
+for clients on the port `"7777"` (`http.ListenAndServe` will figure out an
+IP to listen on as well.)
+
+Then, the `HelloServer` function simply prints a `string` inside the
+`http.ResponseWriter` interface (which itself implements the `io.Writer`
+interface), that will be the `html` page being displayed when somebody
+browses to the `/hello` end-point.
+
+* Adding state
+
+The previous example was nice.
+But what about state?
+Let's modify our server so it can display the current time and the number
+of times clients connected.
+
+The beginning is the same but instead of registering our handle with `"/hello"`,
+let's just do `"/"`:
+
+  func main() {
+  	fmt.Println("please connect to localhost:7777")
+  	http.HandleFunc("/", rootHandle)
+  	log.Fatal(http.ListenAndServe(":7777", nil))
+  }
+
+* 
+
+Then comes our `rootHandle`:
+
+  func rootHandle(w http.ResponseWriter, r *http.Request) {
+  	clients++
+  	fmt.Fprintf(w, "time:  %v\n", time.Now().UTC())
+  	fmt.Fprintf(w, "conns: %v\n", clients)
+  }
+
+where `clients` is just a simple global variable of type `int`:
+
+  var clients = 0
+
+* 
+Let's try that:
+
+  $> go run ./web-02.go
+  please connect to localhost:7777
+
+and in another terminal:
+
+  $> curl http://localhost:7777
+  time:  2017-07-03 16:20:27.679248798 +0000 UTC
+  conns: 1
+  
+  $> curl http://localhost:7777
+  time:  2017-07-03 16:20:32.073097799 +0000 UTC
+  conns: 2
+  
+  $> curl http://localhost:7777
+  time:  2017-07-03 16:20:35.153228977 +0000 UTC
+  conns: 3
+
+*Victory!*
+
+* Victory?
+
+Actually, there is a "slight" problem with this server: it is *racy*.
+
+Add a `time.Sleep(2*time.Second)` just after the `clients++` statement and
+restart the server with:
+
+  $> go run -race ./web-02.go
+
+Then, in another terminal:
+
+  $> for i in `seq 20`; do curl http://localhost:7777; done;
+
+and, concurrently, in yet another one:
+
+  $> for i in `seq 20`; do curl http://localhost:7777; done;
+
+
+* 
+
+You should see something like that in the `web-02.go` terminal:
+
+  WARNING: DATA RACE
+  Read at 0x0000008b94b0 by goroutine 10:
+    main.rootHandle()
+        /home/me/go/src/web-02.go:17 +0x52
+    net/http.HandlerFunc.ServeHTTP()
+        /usr/lib/go/src/net/http/server.go:1726 +0x51
+    net/http.(*ServeMux).ServeHTTP()
+        /usr/lib/go/src/net/http/server.go:2022 +0xa1
+    net/http.serverHandler.ServeHTTP()
+        /usr/lib/go/src/net/http/server.go:2202 +0xbb
+    net/http.(*conn).serve()
+        /usr/lib/go/src/net/http/server.go:1579 +0x5f6
+  
+  Previous write at 0x0000008b94b0 by goroutine 9:
+    main.rootHandle()
+        /home/me/go/src/web-02.go:17 +0x71
+    net/http.HandlerFunc.ServeHTTP()
+        /usr/lib/go/src/net/http/server.go:1726 +0x51
+    net/http.(*ServeMux).ServeHTTP()
+        /usr/lib/go/src/net/http/server.go:2022 +0xa1
+    net/http.serverHandler.ServeHTTP()
+        /usr/lib/go/src/net/http/server.go:2202 +0xbb
+    net/http.(*conn).serve()
+        /usr/lib/go/src/net/http/server.go:1579 +0x5f6
+
+* 
+
+_ie:_ the race occurs at line `17` (the `clients++` line) between 2 goroutines
+created at line `13` (the `http.ListenAndServe` line).
+
+Indeed: in a `net/http` web server, each client request is served and handled
+in a different goroutine.
+Modifying the global variable `clients` won't fly and is a *BUG*.
+
+* 
+
+The fix is to guard the modification of `clients` with a mutex:
+
+  var (
+  	mu      sync.Mutex
+  	clients = 0
+  )
+  
+  func rootHandle(w http.ResponseWriter, r *http.Request) {
+  	mu.Lock()
+  	defer mu.Unlock()
+  	clients++
+  	time.Sleep(2 * time.Second)
+  	fmt.Fprintf(w, "time:  %v\n", time.Now().UTC())
+  	fmt.Fprintf(w, "conns: %v\n", clients)
+  }
+
+_Take_home_message:_ requests are handled concurrently, *ALWAYS* protect
+global state (or use `goroutines` and `chans`.)
+
+* Displaying images
+
+Up to now, we just displayed text in our handlers.
+
+Let's try to display an image.
+
+The `Go` standard library has support for a reasonable set of image formats
+with the `image/...` packages (`image/png`, `image/jpeg` and `image/gif`)
+and the `golang.org/x/image/...` has support for a few more (`tiff`, `bmp`,
+`riff`, `vp8`, `webp`.)
+
+We'll use [[https://godoc.org/image/png][image/png]].
+
+* 
+
+  func main() {
+  	fmt.Println("please connect to localhost:7777")
+  	http.HandleFunc("/", rootHandle)
+  	http.HandleFunc("/img", imageHandle)
+  	log.Fatal(http.ListenAndServe(":7777", nil))
+  }
+  
+  func rootHandle(w http.ResponseWriter, r *http.Request) {
+  	fmt.Fprintf(w, rootPage)
+  }
+  
+  const rootPage = `<html>
+  <head>
+  	<title>Displaying images with Go</title>
+  </head>
+  
+  <body>
+  	<h1>Image display</h1>
+  	<div id="content"><img src="/img"></img></div>
+  </body>
+  `
+
+* 
+
+Now comes the real meat.
+We need to generate an image, say a `100x100` PNG image.
+Looking at the `image` documentation:
+
+  $> go doc image RGBA
+  type RGBA struct {
+  	// Pix holds the image's pixels, in R, G, B, A order. The pixel at
+  	// (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*4].
+  	Pix []uint8
+  	// Stride is the Pix stride (in bytes) between vertically adjacent pixels.
+  	Stride int
+  	// Rect is the image's bounds.
+  	Rect Rectangle
+  }
+      RGBA is an in-memory image whose At method returns color.RGBA values.
+  
+  
+  func NewRGBA(r Rectangle) *RGBA
+  [...]
+
+it would seem `image.RGBA` looks like something we'd want to use.
+
+* 
+
+We first need to create the bounding box (_a.k.a._ the canvas) for that image
+by way of an `image.Rectangle`:
+
+  const sz = 50
+  canvas := image.Rect(0, 0, 2*sz, 2*sz)
+  img := image.NewRGBA(canvas)
+
+Let's fill it with some "nice" color: a gray background.
+
+There is also a package for that: `image/draw` and its `Draw` function.
+
+  $> go doc image/draw Draw
+  func Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point, op Op)
+      Draw calls DrawMask with a nil mask.
+
+Let's use that:
+
+  // draw a gray background
+  draw.Draw(img, canvas, image.NewUniform(color.RGBA{0x66, 0x66, 0x66, 0xff}), image.ZP, draw.Src)
+
+* 
+
+For some additional fun, let's also draw a randomly sized, randomly centered
+red square inside the previous image.
+The randomness is easily addressed via the `math/rand` package and its `rand.Intn`
+global function (which is goroutine safe, by the way):
+
+  x1 := rand.Intn(sz)
+  y1 := rand.Intn(sz)
+  x2 := rand.Intn(sz) + sz
+  y2 := rand.Intn(sz) + sz
+
+Drawing the red square is done with our `image/draw.Draw` friend:
+
+  draw.Draw(
+  	img,
+  	image.Rect(x1, y1, x2, y2),
+  	image.NewUniform(color.RGBA{0xff, 0x00, 0x00, 0xff}),
+  	image.ZP, draw.Src,
+  )
+
+and voila, we have our nice image.
+
+* 
+
+We still need to encode it as a PNG image, though.
+Well, that's done with the `image/png.Encode` function:
+
+  $> go doc image/png Encode
+  func Encode(w io.Writer, m image.Image) error
+      Encode writes the Image m to w in PNG format. Any Image may be encoded, but
+      images that are not image.NRGBA might be encoded lossily.
+
+so here we go, the complete `imageHandle` function code, with error handling:
+
+* 
+
+  func imageHandle(w http.ResponseWriter, r *http.Request) {
+  	const sz = 50
+  	// create the whole image canvas
+  	canvas := image.Rect(0, 0, 2*sz, 2*sz)
+  	img := image.NewRGBA(canvas)
+  	// draw a gray background
+  	draw.Draw(img, canvas, image.NewUniform(color.RGBA{0x66, 0x66, 0x66, 0xff}), image.ZP, draw.Src)
+  	// create a randomly sized, randomly centered, red square
+  	x1 := rand.Intn(sz)
+  	y1 := rand.Intn(sz)
+  	x2 := rand.Intn(sz) + sz
+  	y2 := rand.Intn(sz) + sz
+  	draw.Draw(img, image.Rect(x1, y1, x2, y2), image.NewUniform(color.RGBA{0xff, 0x00, 0x00, 0xff}), image.ZP, draw.Src)
+  	err := png.Encode(w, img)
+  	if err != nil {
+  		log.Printf("error encoding image: %v\n", err)
+  		http.Error(w, err.Error(), http.StatusInternalServerError)
+  	}
+  }
+
+Open your browser at `http://localhost:7777` and refresh to see the red square
+wander around inside the gray square.
+
+* Websockets
+
+Up to now, our servers were rather dull: a client connected, got some response
+from the server and that was it.
+If the client wanted some new data from the server, a new connection had to
+be established.
+
+This is a problem solved by websockets: they allow bi-directional streams
+between the client and the server.
+
+In this new server, we'll make the gray+red image generated previously
+refresh automatically by having the server generate them continuously (say,
+every 2 seconds) and notify the client.
+On the client side, a bit of javascript code will display the new image when
+new data is available on the receiving end of the websocket.
+
+* 
+
+The `main` function is, again, pretty much the same:
+
+  func main() {
+  	fmt.Println("please connect to localhost:7777")
+  	http.HandleFunc("/", rootHandle)
+  	http.HandleFunc("/img", imageHandle)
+  	http.Handle("/chan", websocket.Handler(chanHandler))
+  	go generate(datac)
+  	log.Fatal(http.ListenAndServe(":7777", nil))
+  }
+
+we've just added a new end point for the websocket, using `websocket.Handler`
+from the `golang.org/x/net/websocket` package.
+Also, we've launched a new goroutine that takes a global `datac` channel:
+
+  var datac = make(chan string)
+
+`datac` will hold the `base64` representation of our image.
+There are other, cleaner, ways to exchange image data between a web client
+and a web server, but for this simple example, it will do.
+
+* 
+
+Next, is the `generate` function.
+We want a new image to be generated every 2 seconds and sent down the channel.
+This sounds like a job for a `time.Ticker` !
+
+  func generate(datac chan string) {
+  	tick := time.NewTicker(2 * time.Second)
+  	defer tick.Stop()
+  	for range tick.C {
+  		buf := new(bytes.Buffer)
+  		err := png.Encode(buf, newImage())
+  		if err != nil {
+  			log.Fatal(err)
+  		}
+  		datac <- base64.StdEncoding.EncodeToString(buf.Bytes())
+  	}
+  }
+
+And, indeed, it is.
+
+* 
+
+By now, the code should be pretty self explanatory:
+
+- we create a ticker
+- we iterate over the ticks _via_ the `for` `range` statement
+- for each tick, we create a new image (`newImage` is just a refactored   `imageHandler` where the mechanics of the image creation have been extracted   from the `imageHandler` web handling and put into a new function)
+- we encode the image into PNG, inside a temporary buffer
+- the buffer is then sent as a `base64` string down the channel, using the `encoding/base64` package
+
+* 
+
+Next, the `chanHandler` part.
+The documentation of `golang.org/x/net/websocket` is a bit lacking, but,
+in a nutshell, a handler accepting websocket connections should have the
+following signature:
+
+  func wsHandler(*websocket.Conn) { ... }
+
+Once a websocket connection has been established between a client and a server,
+data can flow both ways.
+For our use case, we are only interested in sending data from the server,
+to the client.
+
+* 
+
+Thus, we just have to extract data from the global `datac` channel (which
+contains our stringified images) and send it to the client:
+
+  func chanHandler(ws *websocket.Conn) {
+  	for data := range datac {
+  		err := websocket.Message.Send(ws, data)
+  		if err != nil {
+  			log.Printf("error sending data: %v\n", err)
+  			return
+  		}
+  	}
+  }
+
+Here, we used the basic `websocket.Message` codec.
+There is a `websocket.JSON` one which could exchange data in JSON.
+
+Finally, we need to handle the client end of the websocket.
+This is done with a bit of javascript in the `"/"` page:
+
+
+* 
+
+  const rootPage = `<html>
+  <head>
+  	<title>Displaying images with Go</title>
+  	<script type="text/javascript">
+  	var sock = null;
+  
+  	function update(data) {
+  		var img = document.getElementById("img-node");
+  		img.src = "data:image/png;base64,"+data;
+  	};
+  
+  	window.onload = function() {
+  		sock = new WebSocket("ws://localhost:7777/chan");
+  		sock.onmessage = function(event) {
+  			update(event.data);
+  		};
+  	};
+  	</script>
+  </head>
+  
+  <body>
+  	<h1>Image display</h1>
+  	<div id="content"><img id="img-node" src="" alt="N/A"/></div>
+  </body>
+  `
+
+* 
+
+We create a websocket listening on `"/chan"` and register the `update`
+function with the `onmessage` callback of that socket.
+`update` will then modify the `"img-node"` node in the DOM to append the
+string-ified `base64` representation of the image.
+
+and, voila.
+
+  $> go run ./web-04.go
+  please connect to localhost:7777
+
+Open your favorite web browser and go to [[http://localhost:7777]] to see the red rectangle's dance.
+
+* Go, WebSockets, WebServers, Chat servers and Concurrency
+
+* Whispernet
+
+This last exercize will show you how to create a small web-based application
+that will allow you to send messages between peers from a web page.
+
+.image _figs/diag-overview.png
+
+* Exercizes
+
+This code lab is divided into a number of exercizes.
+Each exercize builds on the previous one.
+
+The `whispernet/skeleton` directory contains unfinished programs that you
+should finish yourself.
+
+* Part 1: reading and writing
+
+Write a program that
+
+- reads lines from standard input (`os.Stdin`)
+- encodes each line as a JSON object, written to standard output (`os.Stdout`)
+
+This line of input:
+
+        Hello, world
+
+should produce this output:
+
+        {"Body":"Hello, world"}
+
+This is our system's basic message format.
+
+.image _figs/diag-part1.png
+
+* Readers and Writers
+
+The `io` package provides fundamental I/O interfaces that are used throughout most Go code.
+
+The most ubiquitous are the `Reader` and `Writer` types, which describe streams of data.
+
+.code _code/io.go
+
+`Reader` and `Writer` implementations include files, sockets, (de)compressors, image and JSON codecs, and many more.
+
+
+* Chaining Readers
+
+.play _code/reader.go
+
+
+* Buffered I/O
+
+The `bufio` package implements buffered I/O.
+Its `bufio.Scanner` type wraps an `io.Reader` and provides a means to consume
+it by line (or using a specified "split function").
+
+.play _code/bufio.go /const/,$
+
+
+* Encoding JSON objects
+
+The `encoding/json` package converts JSON-encoded data to and from native Go data structures.
+
+.play _code/json-encode.go /type/,$
+
+
+* The Message type
+
+Messages are sent as JSON objects like this:
+
+        {"Body":"This is a message!"}
+
+Which corresponds to a Go data structure like this:
+
+        type Message struct {
+                Body string
+        }
+
+* Error checking
+
+Many functions in Go return an `error` value.
+These values are your friends; they will tell you where you went wrong.
+Ignore them at your peril!
+
+Use [[http://golang.org/pkg/log/#Println][`log.Println`]] to print log messages, and [[http://golang.org/pkg/log/#Fatal][`log.Fatal`]] to print a message and exit the program printing a stack trace.
+
+.play _code/log.go /func main/,$
+
+
+* Part 1: reading and writing (recap)
+
+Write a program that
+
+- reads lines from standard input (`os.Stdin`)
+- encodes each line as a JSON object, written to standard output (`os.Stdout`)
+
+This line of input:
+
+        Hello, world
+
+should produce this output:
+
+        {"Body":"Hello, world"}
+
+This is our system's basic message format.
+
+.image _figs/diag-part1.png
+
+
+* Part 2: Send messages to a peer
+
+Extend your program:
+
+- take an address string from the command line
+- make a TCP connection to the remote host
+- write the JSON-encoded messages to the connection instead of standard output
+
+.image _figs/diag-part2.png
+
+
+* Flag
+
+The `flag` package provides a simple API for parsing command-line flags.
+
+.play _code/flag.go
+
+        $ flag -message 'Hold on...' -delay 5m
+
+
+* Making a network connection
+
+The `net` package provides talk/code for network operations.
+
+The [[https://golang.org/pkg/net/#Dial][`net.Dial`]] function opens a network connection and returns a [[https://golang.org/pkg/net/#Conn][`net.Conn`]], which implements `io.Reader`, `io.Writer`, and `io.Closer` (or `io.ReadWriteCloser`).
+
+.play _code/dial.go /func main/,$
+
+(Usually you would use the `net/http` package to make an HTTP request; the purpose of this example is to demonstrate the lower-level `net` package.)
+
+
+* Part 2: Send messages to a peer (recap)
+
+Extend your program:
+
+- take an address string from the command line
+- make a TCP connection to the remote host
+- write the JSON-encoded messages to the connection instead of standard output
+
+.image _figs/diag-part2.png
+
+* Part 3: Serving network connections
+
+Write a new program:
+
+- listen on a TCP port,
+- accept incoming connections and launch a goroutine to handle each one,
+- decode JSON messages from the incoming connections,
+- print each message `Body` to standard output.
+
+.image _figs/diag-part3.png
+
+
+* Listen/Accept/Serve (1/2)
+
+The [[http://golang.org/pkg/net/#Listen][`net.Listen`]] function binds to a socket and returns a [[http://golang.org/pkg/net/#Listener][`net.Listener`]].
+The [[http://golang.org/pkg/net/#Listener][`net.Listener`]] provides an `Accept` method that blocks until a client connects to the socket, and then returns a [[http://golang.org/pkg/net/#Conn][`net.Conn`]].
+
+This server reads data from a connection and echoes it back:
+
+.play _code/listen-single.go /func main/,$
+
+
+* Goroutines
+
+Goroutines are lightweight threads that are managed by the Go runtime. To run a function in a new goroutine, just put `"go"` before the function call.
+
+.play _code/goroutines.go
+
+
+* Listen/Accept/Serve (2/2)
+
+To handle requests concurrently, serve each connection in its own goroutine:
+
+.play _code/listen.go /func main/,$
+
+
+* Decoding JSON
+
+Decoding JSON from an `io.Reader` is just like writing them to an `io.Writer`, but in reverse.
+
+.play _code/json-decode.go /type/,$
+
+* Part 3: Serving network connections (recap)
+
+Write a new program:
+
+- listen on a TCP port,
+- accept incoming connections and launch a goroutine to handle each one,
+- decode JSON messages from the incoming connections,
+- print each message `Body` to standard output.
+
+.image _figs/diag-part3.png
+
+* Part 4: Listening and dialing
+
+- Combine parts 2 to part 3 (Listen _and_ Dial)
+- Modify the dialling code to use `log.Print` and `return` instead of `log.Fatal`
+- Test by connecting two instances
+
+.image _figs/diag-part4.png
+
+* Part 5: distributing the listen address
+
+- Add an `Addr` field to the `Message` struct,
+- When sending messages, put the listen address in the `Addr` field.
+
+* Add an Addr field to Message
+
+Add an `Addr` field to the `Message` type:
+
+        type Message struct {
+                Addr string
+                Body string
+        }
+
+Now, when constructing `Message` values, populate the `Addr` field with the listen address:
+
+        {"Addr":"192.168.1.200:23542","Body":"This is a message!"}
+
+
+* Obtaining the listener address (1/2)
+
+The `net.Listener` interface provides an `Addr` method that returns a `net.Addr`.
+
+.play _code/listen-addr.go /import/,$
+
+When listening on all interfaces, as specified by the empty hostname in the string `":4000"` above, the `net.Addr` won't be that of our public IP address.
+
+To complete our program, we need to find that IP.
+
+
+* Obtaining the listener address (2/2)
+
+The [[http://godoc.org/github.com/sbinet/whispering-gophers/util][`"github.com/sbinet/whispering-gophers/util"`]] package provides a `Listen` function that binds to a random port on the first available public interface.
+
+.play _code/listen-addr-util.go /import/,$
+
+
+* Part 5: sending the listen address (recap)
+
+- Add an `Addr` field to the `Message` struct,
+- Import `"github.com/sbinet/whispering-gophers/util"`,
+- Use `util.Listen` instead of `net.Listen`,
+- Store the listen address string in a global variable named `self`,
+- When sending messages, put the listen address in the `Addr` field.
+
+* Part 6: separate reading and writing
+
+- Separate reading from standard input and dialing into separate functions that run in separate goroutines.
+
+
+* Channels
+
+Goroutines communicate via channels. A channel is a typed conduit that may be synchronous (unbuffered) or asynchronous (buffered).
+
+.play _code/chan.go
+
+
+* Part 6: separate reading and writing (recap)
+
+- Separate reading from standard input and dialing into separate functions that run in separate goroutines.
+- Pass messages from one function to another using a channel.
+
+* Part 7: tracking peer connections
+
+- Implement the `Peers` type as per the skeleton code.
+- Use `go test` to run the test suite against your implementation.
+
+
+* Sharing state
+
+Mutexes are a simple means to protect shared state from concurrent access.
+
+.play _code/lock.go /START/,/END/
+
+
+* Tracking peer connections (1/2)
+
+Each peer connection runs in its own goroutine.
+
+Each goroutine has its own `chan`Message`. It reads messages from the channel, and writes them to the connection as JSON objects.
+
+A central peer registry associates each peer address with its corresponding `chan`Message`.
+
+        type Peers struct {
+                m  map[string]chan<- Message
+                mu sync.RWMutex
+        }
+
+
+* Tracking peer connections (2/2)
+
+Before making a peer connection, ask the peer registry for a channel for this address:
+
+        // Add creates and returns a new channel for the given address.
+        // If an address already exists in the registry, it returns nil.
+        func (p *Peers) Add(addr string) <-chan Message
+
+When a peer connection is dropped, remove the peer from the registry:
+
+        // Remove deletes the specified peer from the registry.
+        func (p *Peers) Remove(addr string)
+
+To broadcast a `Message` to all peers, ask the peer registry for its list of `chan`Message` and send the `Message` to each channel
+
+        // List returns a slice of all active peer channels.
+        func (p *Peers) List() []chan<- Message
+
+
+* Part 7: tracking peer connections (recap)
+
+- Implement the `Peers` type as per the skeleton code.
+- Use `go test` to run the test suite against your implementation.
+
+
+* Part 8: connect to multiple peers
+
+- Initialize a `Peers` value and store it in a global variable.
+- As we see new peer addresses, open connections to those peers.
+- For each line read from standard input, broadcast that message to all connected peers.
+
+.image _figs/diag-part7.png
+
+
+* Sending without blocking
+
+If a peer connection stalls or dies, we don't want to hold up the rest of our program. To avoid this problem we should do a non-blocking send to each peer when broadcasting messages. This means some messages may be dropped, but in our mesh network this is okay.
+
+.play _code/select.go /START/,/END/
+
+
+* Part 8: connect to multiple peers (recap)
+
+- Initialize a `Peers` value and store it in a global variable.
+- As we see new peer addresses, open connections to those peers.
+- For each line read from standard input, broadcast that message to all connected peers.
+
+.image _figs/diag-part7.png
+
+
+* Part 9: re-broadcast messages
+
+- Add `ID` field to `Message`,
+- When creating a `Message`, populate the `ID` field with a random string,
+- Track the `ID` of each received message; drop duplicates,
+- For each received `Message`, broadcast it to all connected peers.
+
+* Add ID to Message
+
+Add an `ID` field to the `Message` type:
+
+        type Message struct {
+                ID   string
+                Addr string
+                Body string
+        }
+
+Now, when constructing `Message` values, populate the `ID` field with a random string:
+
+        {"ID":"a09d2abb1ad536ada",Addr":"192.168.1.200:23542,"Body":"This is a message!"}
+
+
+* Generating random strings
+
+Use the [[http://godoc.org/github.com/sbinet/whispering-gophers/util/#RandomID][`util.RandomID`]] function to generate a random string.
+
+.play _code/randomid.go
+
+
+* Tracking message IDs
+
+To track messages IDs, use a `map[string]bool`. This works as a kind of set.
+
+        seen := make(map[string]bool)
+
+To check if an id is in the map:
+
+        if seen[id] {
+                fmt.Println(id, "is in the map")
+        }
+
+To put an id in the map:
+
+        seen[id] = true
+
+You should implement a function named `Seen` — make sure it is thread safe!
+
+        // Seen returns true if the specified id has been seen before.
+        // If not, it returns false and marks the given id as "seen".
+        func Seen(id string) bool
+
+
+* Part 9: re-broadcast messages (recap)
+
+- Add `ID` field to `Message`
+- When a `Message`, populate the `ID` field with a random string
+- Track the `ID` of each received message; drop duplicates
+- For each received `Message`, broadcast it to all connected peers
+
+
+* Part 10: add a web-based GUI
+
+- Add a web server using the [[https://godoc.org/net/http][net/http]] package to serve a simple `html` page,
+- Add a [[https://godoc.org/golang.org/x/net/websocket#Conn][websocket.Conn]] handler to exchange `Message{}` data between the browser and the web server,
+- Track all the `websocket.Conn` connections, a la `Peers{}`
+
+* Hello World 2.0
+
+.play _code/web-server.go
+
+* WebSockets (1/2)
+
+[[https://godoc.org/golang.org/x/net/websocket][WebSockets]] enable two-way communications between a client (such as a web browser) and a server (such as a web server.)
+
+.play _code/websocket-server.go
+
+Above is a server example.
+
+* WebSockets (2/2)
+
+And here is a client:
+
+.play _code/websocket-client.go /START/,/END/
+
+* Add a websocket.Conn handler
+
+Register a `"/msg"` handler:
+
+  http.Handle("/msg", websocket.Handler(msgHandler))
+
+and keep track of [[https://godoc.org/golang.org/x/net/websocket#Conn][websocket.Conn]] connections in a `GUI` struct:
+
+  func msgHandler(c *websocket.Conn) {
+      defer c.Close()
+      gui.Add(c)
+      defer gui.Remove(c)
+      // ...
+  }
+  
+  type GUI struct {
+      conns map[*websocket.Conn]bool
+      mu sync.RWMutex
+  }
+  
+  var gui = &GUI{...}
+
+* Add a websocket.Conn manager
+
+  // Add adds a websocket to the list of connections this GUI handles.
+  func (gui *GUI) Add(c *websocket.Conn)
+  
+  // Remove removes a websocket from the list of connections this GUI handles
+  func (gui *GUI) Remove(c *websocket.Conn)
+  
+  // Display sends m to all the websocket connections this GUI handles
+  // so it can be displayed.
+  func (gui *GUI) Display(m Message)
+
+* Part 10: add a web-based GUI (recap)
+
+- Add a web server using the [[https://godoc.org/net/http][net/http]] package to serve a simple `html` page,
+- Add a [[https://godoc.org/golang.org/x/net/websocket#Conn][websocket.Conn]] handler to exchange `Message{}` data between the browser and the web server,
+- Track all the `websocket.Conn` connections, a la `Peers{}`
+
+
+* Acknowledgements / resources
+
+Most of this tutorial has been extracted or adapted from:
+
+.link https://talks.golang.org/2012/tutorial.slide
+
+.link https://talks.golang.org/2014/taste.slide
+
+.link https://tour.golang.org
+
+.link https://talks.godoc.org/github.com/sbinet/whispering-gophers/talk.slide
+
+
+* Extra
+
+* extra-01 - parsing a text file
+
+Let's create a new `extra-01` program which will open a text file and count words in it:
+
+  $ extra-01 $GOPATH/src/github.com/sbinet/margo-2017/testdata/lorem-ipsum.txt
+  69
+
+*Hint:* `godoc` `os` `Open`
+*Hint:* `godoc` `io` `EOF`
+*Hint:* `godoc` `bufio` `Scanner`
+*Hint:* `godoc` `strings` `Split`
+
+*Hint:* if it returns `70` you are not correctly handling empty strings.
+
+* extra-01 (solution)
+
+(next slide)
+
+* extra-01 (solution)
+
+.code _code/extra-01.go /^func main/,/^}/ HLxxx
+
+
+* extra-01 - II
+
+Let's modify `extra-01` to display some general statistics:
+- number of lines
+- number of words
+- 5 most popular words
+
+ $ extra-01 testdata/lorem-ipsum.txt
+  #lines: 7
+  #words: 69
+
+  popcon:
+  #1: "in" (3)
+  #2: "ut" (2)
+  #3: "dolore" (2)
+  #4: "dolor" (2)
+  #5: "voluptate" (1)
+
+*Hint:* use a `map[string]int`
+*Hint:* `godoc` `sort` `Sort`
+*Hint:* `godoc` `sort` `Reverse`
+
+* extra-01 - II (solution)
+
+(next slides)
+
+* extra-01 - II (solution)
+
+.code _code/extra-01-stats.go /START OMIT/,/END OMIT/ HLxxx
+
+
+* extra-01 - II (solution)
+
+.code _code/extra-01-stats.go /STARTSORT OMIT/,/ENDSORT OMIT/ HLxxx
+
+* extra-01 - II (solution)
+
+.code _code/extra-01-stats.go /STARTITEM OMIT/,/ENDITEM OMIT/ HLxxx
+
+* Network programming with Go
+
+See [[https://github.com/sbinet/whispering-gophers]]
