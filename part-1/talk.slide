@@ -1,0 +1,781 @@
+Introduction to Go (part 1)
+Go Workshop@Marseille, 2017-11-20
+
+Sébastien Binet
+CNRS/IN2P3/LPC
+binet@clermont.in2p3.fr
+@0xb1ns
+
+* Prelude
+
+* Prelude
+
+Sources and resources for this workshop are here:
+
+.link https://github.com/sbinet/margo-2017
+
+
+License: BSD-3.
+
+* Background
+
+# In this tutorial I'll show you how to install and use the Go Programming Language.
+
+* What is Go?
+
+Go is a new, general-purpose programming language.
+
+- Compiled
+- Statically typed
+- Concurrent
+- Simple
+- Productive
+
+"Go is a wise, clean, insightful, fresh thinking approach to the greatest-hits subset of the well understood."
+- Michael T. Jones
+
+
+* History
+
+- Project starts at Google in 2007 (by Griesemer, Pike, Thompson)
+- Open source release in November 2009
+- More than 700 contributors have joined the project
+- Version 1.0 release in March 2012
+- Version 1.1 release in May 2013
+- Version 1.2 release in December 2013
+- _[...]_
+- Version 1.7 release in August 2016
+- Version 1.8 release in February 2017
+- Version 1.9 release in August 2017
+
+.link https://golang.org
+
+* Elements of Go
+
+- Russ Cox, Robert Griesemer, Ian Lance Taylor, Rob Pike, Ken Thompson
+
+
+- *Concurrent*, *garbage-collected*
+- An Open-source general progamming language (BSD-3)
+- feel of a *dynamic* *language*: limited verbosity thanks to the _type_ _inference_ _system_, map, slices
+- safety of a *static* *type* *system*
+- compiled down to machine language (so it is fast, goal is ~10% of C)
+- *object-oriented* but w/o classes, *builtin* *reflection*
+- first-class functions with *closures*
+- implicitly satisfied *interfaces*
+
+Available on all major platforms (`Linux`, `Windows`, `macOS`, `Android`, `iOS`, ...) and for many architectures (`amd64`, `arm`, `arm64`, `i386`, `s390x`, `mips64`, ...)
+
+* Getting started
+
+* Install Go
+
+.link https://golang.org/doc/install
+
+- Install from binary distributions or build from source
+- 32- and 64-bit x86 and ARM processors
+- Windows, Mac OS X, Linux, and FreeBSD
+- Other platforms may be supported by `gccgo`
+
+# Go is available in binary form for Windows, Mac OS X, Linux, and FreeBSD running under 32 and 64-bit x86 processor architectures. To install Go on these systems, download the appropriate file from golang.org and either open the package installer (Windows or OS X) or extract the archive to /usr/local/go (Linux and FreeBSD).  
+
+# If you use a different operating system or processor architecture, you may still be able to use Go by building it from source or using gccgo (an alternate Go compiler based on the GNU C Compiler). See the installation instructions on golang.org for how to do this.
+
+* Test your Go installation
+
+# Let's build and run a simple Go program to check that we have a valid Go install. Create a file named hello.go somewhere convenient and populate it with this Go source code:
+
+Put this code into `hello.go`:
+
+.play _code/hello-00.go
+
+# Now, from a command prompt, run `go run hello.go`. This will build your program, storing the executable binary in a temporary location, and run it. You should see the greeting printed to the console.
+
+Run the program:
+
+  $ go run hello.go
+  Hello Marseille-2017
+
+
+* The go tool
+
+The `go` tool is the standard tool for building, testing, and installing Go programs.
+
+Compile and run `hello.go`:
+
+  $ go run hello.go
+
+Run `zip` tests:
+
+  $ go test archive/zip
+  ok  	archive/zip	19.557s
+
+Build and format the files in the current directory:
+
+  $ go build
+  $ gofmt -w .
+
+Fetch and install `websocket`:
+
+  $ go get golang.org/x/net/websocket
+
+* Workspaces
+
+The `go` tool derives build instructions from Go source code.
+
+There's no need to write and maintain build scripts.
+
+For this to work, some prescribed directory structure, known as a workspace, is required.
+
+  workspace/
+    bin # executable binaries
+    pkg # compiled object files
+    src # source code
+
+
+* Create a workspace
+
+Create your workspace now.
+
+  $ mkdir -p $HOME/go/src
+
+(The `bin` and `pkg` sub-directories will be created by the `go` tool.)
+
+Tell the `go` tool where your workspace is by setting the `GOPATH` environment variable:
+# You can do this on OS X, Linux, and FreeBSD by adding this line to the `$HOME/.profile` and re-starting any running shells:
+
+  export GOPATH=$HOME/go
+
+# See the installation instructions at golang.org for how to set `GOPATH` under Windows.
+
+You may also want to add the `bin` sub-directory of your workspace to your `PATH`:
+
+  export PATH=$PATH:$GOPATH/bin
+
+This lets you run your Go programs without specifying their full path.
+
+(You may want to put these `export` commands in the `.bash_profile` file in your home directory.)
+
+* Choose a namespace
+
+Choose a special place for your Go code.
+
+I use `"github.com/sbinet"`, the root of my GitHub account (useful with `go get`).
+
+For this tutorial, let us all use `"github.com/margo"`
+
+# Once you have chosen a namespace, create the required paths inside the `src` directory of your workspace:
+
+  $ mkdir -p $GOPATH/src/github.com/margo
+
+Create a `hello` directory in your namespace and copy `hello.go` there:
+  
+  $ mkdir $GOPATH/src/github.com/margo/hello
+  $ cp hello.go $GOPATH/src/github.com/margo/hello/main.go
+
+* Choose a namespace - II
+
+Now you can build and install the `hello` program with the `go` tool:
+
+  $ go get github.com/margo/hello
+
+This builds an executable named `hello`, and installs it under the `bin` directory of your workspace.
+
+  $ $GOPATH/bin/hello
+  Hello Marseille-2017
+
+* Go - first concepts
+
+* Hello world 2.0
+
+.play _code/hello-web.go
+
+* Hello world 1.0
+
+.play _code/hello-00.go
+
+- `package`
+- `func`
+- `println` builtin function
+
+* Go types
+
+- primitive types
+
+	int, uint, uint8, ..., uint64, int8, ... int64
+	bool, string
+	float32, float64
+	complex64, complex128
+
+- structs
+
+	struct {
+		Name string
+		Age  int
+	}
+
+- arrays and slices
+
+	[3]string, []float64
+
+- maps
+
+	map[string]int
+
+* Kinds of types (continued)
+
+- pointers
+
+	*int, *Person
+
+- functions
+
+	func(int, int) int
+	func(int, float64) (float64, error)
+
+- channels
+
+	chan bool
+
+- interfaces
+
+	interface {
+		Start()
+		Stop()
+	}
+
+* Type declarations
+
+	type [name] [specification]
+
+`Person` is a `struct` type.
+
+	type Person struct {
+		Name string
+		Age  int
+	}
+
+`Celsius` is a `float64` type.
+
+	type Celsius float64
+
+* Function declarations
+
+	func [name] ([params]) [return value]
+	func [name] ([params]) ([return values])
+
+A sum function:
+
+	func sum(a int, b int) int {
+		return a + b
+	}
+
+A function with multiple return values:
+
+	func divMod(a, b int) (int, int) {
+		return a / b, a % b
+	}
+
+Made clearer by naming the return values:
+
+	func divMod(a, b int) (quo, rem int) {
+		return a / b, a % b
+	}
+
+
+* Declaring variables
+
+Normal declaration:
+
+    var text string = "hello"
+
+You can omit types:
+
+    var text = "hello"
+
+And inside of functions:
+
+    text := "hello"
+
+Other types
+
+    a := 0                        // int
+    b := true                     // boolean
+    f := 1.0                      // float64
+    p := Person{"Sébastien", 37}  // Person{Name string; Age int}
+
+* No implicit numeric conversion
+
+Given types:
+
+    type Celsius float64
+
+    type Fahrenheit float64
+
+And the variables:
+
+    var freezing Fahrenheit = 32
+    var boiling Celsius = 100
+
+This code won't compile:
+
+    sauna := (freezing + boiling) / 2
+
+There's no implicit numeric conversion in Go.
+
+* Pointers and memory allocation
+
+* Pointers
+
+Go has pointers:
+
+    var p *int
+    p = new(int)
+
+But no pointer arithmetics:
+
+    var p *int = &a[0]
+    var q = p+2            // invalid
+
+There's `new` but there's no `delete`.
+
+Memory is garbaged collected after it's no longer accessible.
+
+* Memory allocation
+
+The compiler decides where to allocate based on escape analysis.
+
+Using `new` doesn't imply using the heap:
+
+`stack.go`:
+
+    func get() int {
+        n := new(int)
+        return *n
+    }
+
+And not all values in the heap are created with `new`:
+
+`heap.go`:
+
+    func get() *int {
+        n := 4
+        return &n
+    }
+
+
+* Packages & Imports
+
+Every [[https://golang.org/][Go]] program is made up of packages.
+
+Programs start running in `package` `main`.
+
+This program is using the packages with import paths `"fmt"` and `"math/rand"`.
+
+By convention, the package name is the same as the last element of the import path.
+For instance, the `"math/rand"` package comprises files that begin with the statement `package` `rand`.
+
+.play _code/packages.go
+
+
+* Exported names
+
+In [[https://golang.org/][Go]], a name is *exported* if it begins with a *capital* *letter*.
+For example, `Pizza` is an exported name, as is `Pi`, which is exported from the `math` package.
+
+`pizza` and `pi` do not start with a capital letter, so they are not exported.
+
+When importing a package, you can refer only to its exported names.
+Any "unexported" names are not accessible from outside the package.
+
+Run the code. Notice the error message.
+
+.play _code/exported-names.go
+
+* ex-01: a program printing out its arguments
+
+Create `$GOPATH/src/github.com/margo/ex-01/main.go` with the following content:
+
+.code _code/ex-01.go
+
+  ## build and install ex-01
+  $ go get github.com/margo/ex-01
+  
+  ## run ex-01:
+  $ ex-01 foo bar baz 01234
+  args: [ex-01 foo bar baz 01234]
+
+  $ `which ex-01` foo bar baz 01234 
+  args: [/home/me/go/bin/ex-01 foo bar baz 01234]
+
+* Interlude: godoc
+
+Browsing documentation is performed with `godoc`.
+
+  $ godoc os | less
+
+  PACKAGE DOCUMENTATION
+
+  package os
+    import "os"
+
+    Package os provides a platform-independent interface to operating system
+    functionality. The design is Unix-like, although the error handling is
+    Go-like; failing calls return values of type error rather than error
+    numbers. Often, more information is available within the error. For
+    example, if a call that takes a file name fails, such as Open or Stat,
+    the error will include the failing file name when printed and will be of
+    type *PathError, which may be unpacked for more information.
+
+
+* 
+
+  $ godoc os File | less
+
+
+  type File struct {
+      // contains filtered or unexported fields
+  }
+      File represents an open file descriptor.
+  
+  func Create(name string) (file *File, err error)
+      Create creates the named file mode 0666 (before umask), truncating it if
+      it already exists. If successful, methods on the returned File can be
+      used for I/O; the associated file descriptor has mode O_RDWR. If there
+      is an error, it will be of type *PathError.
+  
+  func Open(name string) (file *File, err error)
+      Open opens the named file for reading. If successful, methods on the
+      returned file can be used for reading; the associated file descriptor
+      has mode O_RDONLY. If there is an error, it will be of type *PathError.
+
+
+* 
+
+Also available from:
+
+.link https://golang.org/pkg
+
+.link https://golang.org/pkg/os
+
+.link https://godoc.org/os
+
+or locally:
+
+  $ godoc -http=:8080
+  $ open localhost:8080/pkg
+
+
+* ex-01 - II
+
+  $ godoc os Args
+
+  var Args []string
+      Args hold the command-line arguments, starting with the program name.
+
+
+Modify `ex-01` to iterate over this slice and print each argument (except the executable name) on a line, prefixed with its index number:
+
+  $ ex-01 foo baz
+  0: "foo"
+  1: "baz"
+
+(Make sure it still works when no argument is passed to the command)
+
+*Hint:* look for the `"range"` and `"for"` keywords on [[https://golang.org/doc/effective_go.html#for][Effective Go]].
+
+* ex-01 - II
+
+Solution on the next slide...
+
+* ex-01 - II (solution)
+
+.code _code/ex-01-index.go
+
+* ex-02 - a simple calculator
+
+Let's create a new `ex-02` program taking integers as arguments from the command line and returning their sum:
+
+  ## build+install ex-02
+  $ go get github.com/margo/ex-02
+  
+  $ ex-02 1 2 3 4 100
+  sum= 110
+
+  $ ex-02 1 2 3 4 100 01
+  sum= 111
+
+  $ ex-02 1 2 3 4 100 1.2
+  **error** strconv.ParseInt: parsing "1.2": invalid syntax
+
+*Hint:* `godoc` `strconv`
+
+* ex-02 - a simple calculator
+
+Solution on the next slide...
+
+* ex-02 - solution
+
+.code _code/ex-02.go
+
+
+* ex-02 - II
+
+Let's modify `ex-02` to take an optional `-v` argument to enable a verbose mode, displaying the running sum:
+
+  $ ex-02 -v 1 2 3 4 100
+  0
+  + 1 -> 1
+  + 2 -> 3
+  + 3 -> 6
+  + 4 -> 10
+  + 100 -> 110
+  ===============
+  sum= 110
+
+
+  $ ex-02 1 2 3 4 100
+  sum= 110
+
+*Hint:* `godoc` `flag`
+*Hint:* beware, correctly handle the extra `-v` argument.
+
+
+* ex-02 - II (solution)
+
+.code _code/ex-02-flag.go /^func main/,/^}/ HLflag
+
+
+* ex-03 - loops & functions
+
+As a simple way to play with functions and loops, implement the square root function using Newton's method.
+
+In this case, Newton's method is to approximate Sqrt(x) by picking a starting point z and then repeating:
+
+.image _figs/newton.png
+
+To begin with, just repeat that calculation 10 times and see how close you get to the answer for various values (1, 2, 3, ...).
+
+Next, change the loop condition to stop once the value has stopped changing (or only changes by a very small delta).
+See if that's more or fewer iterations.
+How close are you to the `math.Sqrt`?
+
+* ex-03 - loops & functions
+
+.play _code/ex-03-start.go
+
+* ex-03 - loops & functions
+
+Solution on the next slide...
+
+* ex-03 - loops & functions
+
+.play _code/ex-03-s1.go
+
+* ex-03 - loops & functions
+
+.play _code/ex-03-s2.go
+
+* ex-04 - rot13
+
+Let's create a new `rot13` package:
+
+  $ mkdir -p $GOPATH/src/github.com/margo/rot13
+
+- `rot13` will implement the Caesar cipher ("rotate by 13 places"):
+
+.link https://en.wikipedia.org/wiki/ROT13
+
+
+* ex-04 - rot13 - II
+
+- in that `rot13` package, create `rot13_test.go` with the following content:
+
+.code _code/rot13_test.go /STARTIMPORT OMIT/,/ENDIMPORT OMIT/ HLxxx
+
+
+* ex-04 - rot13 - III
+
+- in that `rot13` package, create `rot13_test.go` with the following content:
+
+.code _code/rot13_test.go /^func TestRot13/,/^}/ HLxxx
+
+
+* ex-04 - rot13 - IV
+
+- still in `rot13`, create `rot13.go` with the following content:
+
+  package rot13
+
+  func rot13(b byte) byte {
+       // ...
+  }
+
+- under this `rot13` transformation, `"hello"` should become `"uryyb"`
+
+- run:
+
+  $ go test -v
+  === RUN TestRot13
+  --- PASS: TestRot13 (0.00 seconds)
+  PASS
+  ok  	github.com/margo/rot13	0.002s
+  
+and modify the `rot13` function until the test passes.
+
+- `go` `test` builds and runs the tests in the local directory.
+
+* ex-04 - rot13 (solution)
+
+(next slide)
+
+* ex-04 - rot13 (solution)
+
+.code _code/rot13.go /STARTROT13-FUNC OMIT/,/ENDROT13-FUNC OMIT/
+
+
+* Interlude: Interfaces
+
+* Interfaces
+
+An interface type is defined as a set of method signatures.
+
+A value of interface type can hold any value that implements those methods.
+
+  type Abser interface {
+      Abs() float64
+  }
+  
+  type Reader interface {
+      Read(data []byte) (int, error)
+  }
+
+
+_E.g.:_ the type `MyFloat` implements the `Abser` interface:
+
+  type MyFloat float64
+  
+  func (f MyFloat) Abs() float64 {
+  	if f < 0 {
+  		return float64(-f)
+  	}
+  	return float64(f)
+  }
+
+* Interfaces
+
+Modify the code below to make `MyFloat` and `Vertex` implement the `Abser` interface:
+
+.play _code/ex-interfaces.go /STARTABSER OMIT/,/ENDABSER OMIT/
+
+* Interfaces
+
+A common pattern in `Go` is an `io.Reader` that wraps another `io.Reader`, modifying the stream in some way.
+
+A typical example is the `compress/gzip.NewReader` function which takes an `io.Reader` (a stream of gzipped data) and returns a `*gzip.Reader` that also implements `io.Reader` (a stream of the decompressed data).
+
+.code _code/gz-r.go /START OMIT/,/END OMIT/
+
+ $ cat $GOPATH/src/github.com/sbinet/margo-2017/testdata/data.gz | my-gunzip
+
+* ex-04 - V
+
+- create a new `ex-04` program with the following content:
+
+.code _code/ex-04.go HLxxx
+
+
+* ex-04 - VI
+
+- now, in `rot13.go` implement the `io.Reader` interface:
+
+.code _code/rot13.go /STARTROT13 OMIT/,/ENDROT13 OMIT/
+
+  func (r reader) Read(p []byte) (int, error) {
+       // ...
+  }
+
+- eventually, the following should work:
+
+  $ echo "hello" | ex-04
+  uryyb
+
+  $ echo "hello" | ex-04 | ex-04
+  hello
+
+* Acknowledgements / resources
+
+Most of this tutorial has been extracted or adapted from:
+
+.link https://talks.golang.org/2012/tutorial.slide
+
+.link https://talks.golang.org/2014/taste.slide
+
+.link https://tour.golang.org
+
+.link https://talks.godoc.org/github.com/sbinet/whispering-gophers/talk.slide
+
+
+* Extra
+
+* extra-01 - parsing a text file
+
+Let's create a new `extra-01` program which will open a text file and count words in it:
+
+  $ extra-01 $GOPATH/src/github.com/sbinet/margo-2017/testdata/lorem-ipsum.txt
+  69
+
+*Hint:* `godoc` `os` `Open`
+*Hint:* `godoc` `io` `EOF`
+*Hint:* `godoc` `bufio` `Scanner`
+*Hint:* `godoc` `strings` `Split`
+
+*Hint:* if it returns `70` you are not correctly handling empty strings.
+
+* extra-01 (solution)
+
+(next slide)
+
+* extra-01 (solution)
+
+.code _code/extra-01.go /^func main/,/^}/ HLxxx
+
+
+* extra-01 - II
+
+Let's modify `extra-01` to display some general statistics:
+- number of lines
+- number of words
+- 5 most popular words
+
+ $ extra-01 testdata/lorem-ipsum.txt
+  #lines: 7
+  #words: 69
+
+  popcon:
+  #1: "in" (3)
+  #2: "ut" (2)
+  #3: "dolore" (2)
+  #4: "dolor" (2)
+  #5: "voluptate" (1)
+
+*Hint:* use a `map[string]int`
+*Hint:* `godoc` `sort` `Sort`
+*Hint:* `godoc` `sort` `Reverse`
+
+* extra-01 - II (solution)
+
+(next slides)
+
+* extra-01 - II (solution)
+
+.code _code/extra-01-stats.go /START OMIT/,/END OMIT/ HLxxx
+
+
+* extra-01 - II (solution)
+
+.code _code/extra-01-stats.go /STARTSORT OMIT/,/ENDSORT OMIT/ HLxxx
+
+* extra-01 - II (solution)
+
+.code _code/extra-01-stats.go /STARTITEM OMIT/,/ENDITEM OMIT/ HLxxx
