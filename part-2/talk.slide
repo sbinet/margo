@@ -1,0 +1,473 @@
+Introduction to Go (part 2)
+Go Workshop@Marseille, 2017-11-20
+
+Sébastien Binet
+CNRS/IN2P3/LPC
+binet@clermont.in2p3.fr
+@0xb1ns
+
+* Prelude
+
+* Prelude
+
+Sources and resources for this workshop are here:
+
+.link https://github.com/sbinet/margo-2017
+
+
+License: BSD-3.
+
+* Concurrency: basic examples
+
+* A boring function
+
+We need an example to show the interesting properties of the concurrency primitives.
+To avoid distraction, we make it a boring example.
+
+.play _code/boring.go /START/,/STOP/
+
+* Slightly less boring
+
+Make the intervals between messages unpredictable (still under a second).
+
+.code _code/lessboring.go /START/,/STOP/
+
+* Running it
+
+The boring function runs on forever, like a boring party guest.
+
+.play _code/lessboring.go /^func.main/,$
+
+* Ignoring it
+
+The `go` statement runs the function as usual, but doesn't make the caller wait.
+
+It launches a goroutine.
+
+The functionality is analogous to the `&` on the end of a shell command.
+
+.play _code/goboring.go 1,/^}/
+
+
+* Ignoring it a little less
+
+When `main` returns, the program exits and takes the boring function down with it.
+
+We can hang around a little, and on the way show that both main and the launched goroutine are running.
+
+.play _code/waitgoboring.go /func.main/,/^}/
+
+* Goroutines
+
+What is a goroutine? It's an independently executing function, launched by a go statement.
+
+It has its own call stack, which grows and shrinks as required.
+
+It's very cheap. It's practical to have thousands, even hundreds of thousands of goroutines.
+
+It's not a thread.
+
+There might be only one thread in a program with thousands of goroutines.
+
+Instead, goroutines are multiplexed dynamically onto threads as needed to keep all the goroutines running.
+
+But if you think of it as a very cheap thread, you won't be far off.
+
+* Communication
+
+Our boring examples cheated: the main function couldn't see the output from the other goroutine.
+
+It was just printed to the screen, where we pretended we saw a conversation.
+
+Real conversations require communication.
+
+* Channels
+
+A channel in Go provides a connection between two goroutines, allowing them to communicate.
+
+.code _code/helpers.go /START1/,/STOP1/
+.code _code/helpers.go /START2/,/STOP2/
+.code _code/helpers.go /START3/,/STOP3/
+
+* Using channels
+
+A channel connects the main and boring goroutines so they can communicate.
+
+.play _code/changoboring.go /START1/,/STOP1/
+.code _code/changoboring.go /START2/,/STOP2/
+
+* Synchronization
+
+When the main function executes <–c, it will wait for a value to be sent.
+
+Similarly, when the boring function executes c <– value, it waits for a receiver to be ready.
+
+A sender and receiver must both be ready to play their part in the communication. Otherwise we wait until they are.
+
+Thus channels both communicate and synchronize.
+
+* The Go approach
+
+Don't communicate by sharing memory, share memory by communicating.
+
+* "Patterns"
+
+* Generator: function that returns a channel
+
+Channels are first-class values, just like strings or integers.
+
+.play _code/generatorboring.go /START1/,/STOP1/
+.code _code/generatorboring.go /START2/,/STOP2/
+
+* Channels as a handle on a service
+
+Our boring function returns a channel that lets us communicate with the boring service it provides.
+
+We can have more instances of the service.
+
+.play _code/generator2boring.go /START1/,/STOP1/
+
+* Multiplexing
+
+These programs make Joe and Ann count in lockstep.
+We can instead use a fan-in function to let whosoever is ready talk.
+
+.code _code/faninboring.go /START3/,/STOP3/
+.play _code/faninboring.go /START1/,/STOP1/
+
+* Fan-in
+
+.image _figs/gophermegaphones.jpg
+
+* Restoring sequencing
+
+Send a channel on a channel, making goroutine wait its turn.
+
+Receive all messages, then enable them again by sending on a private channel.
+
+First we define a message type that contains a channel for the reply.
+
+.code _code/sequenceboring.go /START0/,/STOP0/
+
+* Restoring sequencing.
+
+Each speaker must wait for a go-ahead.
+
+.code _code/sequenceboring.go /START1/,/STOP1/
+.code _code/sequenceboring.go /START2/,/STOP2/
+.play _code/sequenceboring.go /START3/,/STOP3/
+
+* Select
+
+A control structure unique to concurrency.
+
+The reason channels and goroutines are built into the language.
+
+* Select
+
+The select statement provides another way to handle multiple channels.
+It's like a switch, but each case is a communication:
+
+- All channels are evaluated.
+- Selection blocks until one communication can proceed, which then does.
+- If multiple can proceed, select chooses pseudo-randomly.
+- A default clause, if present, executes immediately if no channel is ready.
+
+.code _code/select-conc.go /START0/,/STOP0/
+
+* Fan-in again
+
+Rewrite our original fanIn function. Only one goroutine is needed. Old:
+
+.code _code/faninboring.go /START3/,/STOP3/
+
+* Fan-in using select
+
+Rewrite our original fanIn function. Only one goroutine is needed. New:
+
+.play _code/selectboring.go /START3/,/STOP3/
+
+* Timeout using select
+
+The time.After function returns a channel that blocks for the specified duration.
+After the interval, the channel delivers the current time, once.
+
+.play _code/timeout.go /START1/,/STOP1/
+
+* Timeout for whole conversation using select
+
+Create the timer once, outside the loop, to time out the entire conversation.
+(In the previous program, we had a timeout for each message.)
+
+.play _code/timeoutall.go /START1/,/STOP1/
+
+
+* Quit channel
+
+We can turn this around and tell Joe to stop when we're tired of listening to him.
+
+.code _code/quit.go /START1/,/STOP1/
+.play _code/quit.go /START2/,/STOP2/
+
+
+* Receive on quit channel
+
+How do we know it's finished? Wait for it to tell us it's done: receive on the quit channel
+
+.code _code/rcvquit.go /START1/,/STOP1/
+.play _code/rcvquit.go /START2/,/STOP2/
+
+* Daisy-chain
+
+.play _code/daisy.go /func/,$
+
+* Chinese whispers, gopher style
+
+.image _figs/gophereartrumpet.jpg
+
+* Conclusions
+
+Goroutines and channels make it easy to express complex operations dealing with:
+
+- multiple inputs
+- multiple outputs
+- timeouts
+- failure
+
+And they're fun to use.
+
+* Concurrency: hands-on
+
+* Exercize: equivalent binary trees
+
+There can be many different binary trees with the same sequence of values stored at the leaves. For example, here are two binary trees storing the sequence 1, 1, 2, 3, 5, 8, 13.
+
+.image _figs/tree.png
+
+A function to check whether two binary trees store the same sequence is quite complex in most languages. We'll use Go's concurrency and channels to write a simple solution.
+
+* 
+
+This example uses the `"golang.org/x/tour/tree"` package, which defines the type:
+
+ type Tree struct {
+    Left  *Tree
+    Value int
+    Right *Tree
+ }
+
+We need to install it:
+
+ $> go get golang.org/x/tour/tree
+
+* 
+
+Let's create the skeleton for our binary-tree exercize `~/go/src/github.com/margo/btree/main.go`:
+
+.code _code/btree-start.go
+
+* 
+
+- Implement the `Walk` function.
+
+- Test the `Walk` function.
+
+The function `tree.New(k)` constructs a randomly-structured binary tree holding the values `k`, `2k`, `3k`, ..., `10k`.
+
+Create a new channel `ch` and kick off the walker:
+
+ go Walk(tree.New(1), ch)
+
+Then read and print 10 values from the channel. It should be the numbers 1, 2, 3, ..., 10.
+
+
+- Implement the `Same` function using `Walk` to determine whether `t1` and `t2` store the same values.
+
+- Test the `Same` function.
+
+`Same(tree.New(1),` `tree.New(1))` should return `true`, and `Same(tree.New(1),` `tree.New(2))` should return `false`.
+
+The documentation for `Tree` can be found [[https://godoc.org/golang.org/x/tour/tree#Tree][here]].
+
+* Solution
+
+.code _code/btree.go /STARTWALK/,/ENDWALK/
+
+* Solution
+
+.code _code/btree.go /STARTSAME/,/ENDSAME/
+
+* Solution
+
+.play _code/btree.go /^func main/,/^}/
+
+
+* 
+
+Actually, the presented solution contains a bug...
+When the 2 trees don't have the same length, `Same` will return early:
+
+.code _code/btree.go /STARTSAME/,/ENDSAME/ HLxxx
+
+This will leave one of the 2 `Walk` goroutines waiting to send its values over the channel.
+
+* 
+
+We need to fix that.
+We need to tell the 2 `Walk` goroutines that their services are no longer required.
+
+This can be done with a `quit` channel.
+
+* Solution
+
+.code _code/btree-noleak.go /STARTWALK/,/ENDWALK/
+
+* Solution
+
+.code _code/btree-noleak.go /STARTSAME/,/ENDSAME/
+
+* Solution
+
+.play _code/btree-noleak.go /^func main/,/^}/
+
+
+* Exercize: Lattice paths
+
+Starting in the top left corner of a `2x2` grid, and only being able to move to the right and down, there are exactly 6 routes to the bottom right corner.
+
+.image _figs/lattice.png
+
+How many such routes are there through a `10x10` grid?
+
+
+* A (final) larger example
+
+
+* Top 10 identifiers in std library
+
+.code _code/idents.go
+
+  $ cat $(find $(go env GOROOT) -name '*.go') | ./idents | sort | uniq -c | sort -nr | sed 10q
+  4.76s user 3.66s system 134% cpu 6.27s total
+
+* A variation: Histogram of Go statements
+
+A histogram is a map from statement name ("if", "for", etc.) to use count:
+
+.code _code/histo0.go /histogram START/,/histogram END/
+
+Algorithm:
+
+- Use walkStdLib to traverse all files of the std library
+- For each file, parse and create abstract syntax tree
+- Traverse syntax tree and add each statement to histogram
+- Print the result
+
+.code _code/histo0.go /main START/,/main END/
+
+* A variation: Histogram of Go statements
+
+Let's create a new program called `indexer`.
+
+Initial code in: [[https://github.com/sbinet/margo-2017/blob/master/cmd/indexer/main.go][github.com/sbinet/margo-2017/cmd/indexer]]
+
+* Processing a Go source file
+
+.code _code/histo0.go /add START/,/add END/
+
+
+* Printing the histogram
+
+.play _code/histo0.go /print START/,/print END/
+
+Note: Histogram (map) iteration order is not specified.
+
+* Results (so far)
+
+  $ time indexer
+     0.  25.55%  53991  *ast.AssignStmt
+     1.   1.84%   3883  *ast.ForStmt
+     2.   0.06%    129  *ast.LabeledStmt
+     3.   1.10%   2325  *ast.BranchStmt
+     4.   0.60%   1259  *ast.SwitchStmt
+     5.   2.59%   5478  *ast.DeclStmt
+  [...]
+     9.  26.33%  55651  *ast.BlockStmt
+    10.  12.93%  27335  *ast.IfStmt
+    11.  11.72%  24759  *ast.ExprStmt
+    12.   2.66%   5617  *ast.CaseClause
+    13.   1.34%   2833  *ast.RangeStmt
+  [...]
+    18.   0.16%    348  *ast.GoStmt
+  indexer  2.95s user 0.07s system 108% cpu 2.78s total
+
+compared to:
+
+  $ cat $(find $(go env GOROOT) -name '*.go') | ./idents | sort | uniq -c | sort -nr | sed 10q
+  4.76s user 3.66s system 134% cpu 6.27s total
+
+* Sorting
+
+sort.Sort operates on any type that implements the sort.Interface:
+
+	interface {
+		Len() int
+		Swap(i, j int)
+		Less(i, j int) bool
+	}
+
+For instance, to sort a slice of strings lexically, define:
+
+.code _code/sort.go /lexical START/,/lexical END/
+
+And sort:
+
+	sort.Sort(lexical(s))  // where s is a []string slice
+
+
+* Sorting histogram entries
+
+.code _code/histo.go /byCount START/,/byCount END/
+
+
+* Improved histogram printing
+
+.play _code/histo.go /print START/,/print END/
+
+ 
+* Putting it all together
+
+
+* Analyze files concurrently, map-reduce style
+
+Mapper:
+
+.code _code/histop.go /mapper START/,/mapper END/
+
+Reducer:
+
+.code _code/histop.go /reducer START/,/reducer END/
+
+.code _code/histop.go /merge START/,/merge END/
+
+
+* From sequential program...
+
+.play _code/histo.go /main START/,/main END/
+
+
+* ... to concurrent program
+
+.play _code/histop.go /main START/,/main END/
+
+* Acknowledgements / resources
+
+Most of this tutorial has been extracted or adapted from:
+
+.link https://talks.golang.org/2012/tutorial.slide
+
+.link https://talks.golang.org/2014/taste.slide
+
+.link https://tour.golang.org
+
+.link https://talks.godoc.org/github.com/sbinet/whispering-gophers/talk.slide
