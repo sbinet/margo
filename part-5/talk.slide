@@ -1,0 +1,33 @@
+Introduction to Go (part 5)
+Go Workshop@Marseille, 2017-11-20
+
+Sébastien Binet
+CNRS/IN2P3/LPC
+binet@clermont.in2p3.fr
+@0xb1ns
+
+* Prelude
+
+* Prelude
+
+Sources and resources for this workshop are here:
+
+.link https://github.com/sbinet/margo-2017
+
+
+License: BSD-3.
+
+* Data Acquisition application
+
+
+* Acknowledgements / resources
+
+Most of this tutorial has been extracted or adapted from:
+
+.link https://talks.golang.org/2012/tutorial.slide
+
+.link https://talks.golang.org/2014/taste.slide
+
+.link https://tour.golang.org
+
+.link https://talks.godoc.org/github.com/sbinet/whispering-gophers/talk.slide
