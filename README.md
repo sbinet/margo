@@ -3,7 +3,14 @@ margo-2017
 
 `margo-2017` is a simple repository holding sources for an introduction to `Go` held in Marseille, 2017.
 
-The slides are [here](https://talks.godoc.org/github.com/sbinet/margo-2017/talk.slide).
+The slides are here:
+
+- [part 1 (basic intro)](https://talks.godoc.org/github.com/sbinet/margo-2017/part-1/talk.slide)
+- [part 2 (concurrency)](https://talks.godoc.org/github.com/sbinet/margo-2017/part-2/talk.slide)
+- [part 3 (cgo)](https://talks.godoc.org/github.com/sbinet/margo-2017/part-3/talk.slide)
+- [part 4 (web servers)](https://talks.godoc.org/github.com/sbinet/margo-2017/part-4/talk.slide)
+- [part 5 (a DAQ application)](https://talks.godoc.org/github.com/sbinet/margo-2017/part-5/talk.slide)
+- [part 6 (a chat application)](https://talks.godoc.org/github.com/sbinet/margo-2017/part-6/talk.slide)
 
 ## Bootstrapping the work environment
 
