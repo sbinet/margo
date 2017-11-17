@@ -1,0 +1,72 @@
+Introduction to Go (part 3)
+Go Workshop@Marseille, 2017-11-20
+
+Sébastien Binet
+CNRS/IN2P3/LPC
+binet@clermont.in2p3.fr
+@0xb1ns
+
+* Prelude
+
+* Prelude
+
+Sources and resources for this workshop are here:
+
+.link https://github.com/sbinet/margo-2017
+
+
+License: BSD-3.
+
+* Calling C
+
+* cgo
+
+[[https://golang.org/][Go]] has a convenient way to call `C`:
+
+.play _code/cgo.go
+
+
+* cgo - II
+
+It is also possible to combine `Go` and `C` sources together inside a single package:
+
+  $> mkdir $GOPATH/src/github.com/margo/my-cgo
+
+Inside this new package, put 3 files: `main.go`, `my-cgo-lib.h`, `my-cgo-lib.c`.
+
+`main.go:`
+.code _code/my-cgo-main.go
+
+* cgo - III
+
+`my-cgo-lib.h:`
+.code _code/my-cgo-lib.h
+
+`my-cgo-lib.c:`
+.code _code/my-cgo-lib.c
+
+* cgo - IV
+
+And build/install like so:
+
+  $> go get -v github.com/margo/my-cgo
+  github.com/margo/my-cgo
+  
+  $> my-cgo
+  Hello From C
+
+
+For more informations: [[https://golang.org/cmd/cgo/][cmd/cgo]]
+
+
+* Acknowledgements / resources
+
+Most of this tutorial has been extracted or adapted from:
+
+.link https://talks.golang.org/2012/tutorial.slide
+
+.link https://talks.golang.org/2014/taste.slide
+
+.link https://tour.golang.org
+
+.link https://talks.godoc.org/github.com/sbinet/whispering-gophers/talk.slide
