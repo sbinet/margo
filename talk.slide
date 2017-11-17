@@ -1017,6 +1017,15 @@ This can be done with a `quit` channel.
 .play _code/btree-noleak.go /^func main/,/^}/
 
 
+* Exercize: Lattice paths
+
+Starting in the top left corner of a `2x2` grid, and only being able to move to the right and down, there are exactly 6 routes to the bottom right corner.
+
+.image _figs/lattice.png
+
+How many such routes are there through a `10x10` grid?
+
+
 * A (final) larger example
 
 
