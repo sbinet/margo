@@ -922,6 +922,100 @@ Goroutines and channels make it easy to express complex operations dealing with:
 
 And they're fun to use.
 
+* Concurrency: hands-on
+
+* Exercize: equivalent binary trees
+
+There can be many different binary trees with the same sequence of values stored at the leaves. For example, here are two binary trees storing the sequence 1, 1, 2, 3, 5, 8, 13.
+
+.image _figs/tree.png
+
+A function to check whether two binary trees store the same sequence is quite complex in most languages. We'll use Go's concurrency and channels to write a simple solution.
+
+* 
+
+This example uses the `"golang.org/x/tour/tree"` package, which defines the type:
+
+ type Tree struct {
+    Left  *Tree
+    Value int
+    Right *Tree
+ }
+
+We need to install it:
+
+ $> go get golang.org/x/tour/tree
+
+* 
+
+Let's create the skeleton for our binary-tree exercize `~/go/src/github.com/margo/btree/main.go`:
+
+.code _code/btree-start.go
+
+* 
+
+- Implement the `Walk` function.
+
+- Test the `Walk` function.
+
+The function `tree.New(k)` constructs a randomly-structured binary tree holding the values `k`, `2k`, `3k`, ..., `10k`.
+
+Create a new channel `ch` and kick off the walker:
+
+ go Walk(tree.New(1), ch)
+
+Then read and print 10 values from the channel. It should be the numbers 1, 2, 3, ..., 10.
+
+
+- Implement the `Same` function using `Walk` to determine whether `t1` and `t2` store the same values.
+
+- Test the `Same` function.
+
+`Same(tree.New(1),` `tree.New(1))` should return `true`, and `Same(tree.New(1),` `tree.New(2))` should return `false`.
+
+The documentation for `Tree` can be found [[https://godoc.org/golang.org/x/tour/tree#Tree][here]].
+
+* Solution
+
+.code _code/btree.go /STARTWALK/,/ENDWALK/
+
+* Solution
+
+.code _code/btree.go /STARTSAME/,/ENDSAME/
+
+* Solution
+
+.play _code/btree.go /^func main/,/^}/
+
+
+* 
+
+Actually, the presented solution contains a bug...
+When the 2 trees don't have the same length, `Same` will return early:
+
+.code _code/btree.go /STARTSAME/,/ENDSAME/ HLxxx
+
+This will leave one of the 2 `Walk` goroutines waiting to send its values over the channel.
+
+* 
+
+We need to fix that.
+We need to tell the 2 `Walk` goroutines that their services are no longer required.
+
+This can be done with a `quit` channel.
+
+* Solution
+
+.code _code/btree-noleak.go /STARTWALK/,/ENDWALK/
+
+* Solution
+
+.code _code/btree-noleak.go /STARTSAME/,/ENDSAME/
+
+* Solution
+
+.play _code/btree-noleak.go /^func main/,/^}/
+
 
 * A (final) larger example
 
