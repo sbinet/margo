@@ -339,6 +339,9 @@ Starting in the top left corner of a `2x2` grid, and only being able to move to 
 
 How many such routes are there through a `10x10` grid?
 
+* Exercize: Lattice paths
+
+.code _code/lattice-start.go
 
 * A (final) larger example
 
