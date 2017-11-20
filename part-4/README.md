@@ -1,0 +1,625 @@
+# Introduction to web servers in Go
+
+In this hands-on session, we'll see how to write and develop web servers in `Go`.
+
+## Hello World - 2.0
+
+Writing a web server in `Go` is possible, using only the packages from the
+standard library:
+
+```go
+package main
+
+import (
+        "fmt"
+        "log"
+        "net/http"
+)
+
+func main() {
+        fmt.Println("please connect to localhost:7777/hello")
+        http.HandleFunc("/hello", HelloServer)
+        log.Fatal(http.ListenAndServe(":7777", nil))
+}
+
+func HelloServer(w http.ResponseWriter, req *http.Request) {
+        log.Println(req.URL)
+        fmt.Fprintf(w, "Hello, world!\nURL = %s\n", req.URL)
+}
+```
+
+Compiling the code above and running it in one terminal:
+
+```sh
+$> go run ./hello-web.go
+```
+
+while running this command in another terminal:
+
+```sh
+$> curl http://localhost:7777/hello
+Hello, world!
+URL = /hello
+```
+
+shows how simple writing a web server is in `Go`.
+
+Let's go through the code a bit.
+
+The `main` function first registers a `HandleFunc` with the default HTTP server
+in the `net/http` package.
+It binds the function `HelloServer` with the end-point `"/hello"` for that
+server.
+
+Next, the server and its infinite `for-loop` are launched _via_ the call to
+the `http.ListenAndServe` function: we instruct the `http` package to use
+the default `http.Handler` (with the second `nil` argument) and to listen
+for clients on the port `"7777"` (`http.ListenAndServe` will figure out an
+IP to listen on as well.)
+
+Then, the `HelloServer` function simply prints a `string` inside the
+`http.ResponseWriter` interface (which itself implements the `io.Writer`
+interface), that will be the `html` page being displayed when somebody
+browses to the `/hello` end-point.
+
+And voila.
+
+## Adding state
+
+The previous example was nice.
+But what about state?
+Let's modify our server so it can display the current time and the number
+of times clients connected.
+
+The beginning is the same but instead of registering our handle with `"/hello"`,
+let's just do `"/"`:
+
+```go
+func main() {
+	fmt.Println("please connect to localhost:7777")
+	http.HandleFunc("/", rootHandle)
+	log.Fatal(http.ListenAndServe(":7777", nil))
+}
+```
+
+Then comes our `rootHandle`:
+
+```go
+func rootHandle(w http.ResponseWriter, r *http.Request) {
+	clients++
+	fmt.Fprintf(w, "time:  %v\n", time.Now().UTC())
+	fmt.Fprintf(w, "conns: %v\n", clients)
+}
+```
+
+where `clients` is just a simple global variable of type `int`:
+
+```go
+var clients = 0
+```
+
+Let's try that:
+
+```sh
+$> go run ./web-02.go
+please connect to localhost:7777
+```
+
+and in another terminal:
+```sh
+$> curl http://localhost:7777
+time:  2016-09-21 14:09:40.995985522 +0000 UTC
+conns: 1
+
+$> curl http://localhost:7777
+time:  2016-09-21 14:09:43.699769675 +0000 UTC
+conns: 2
+
+$> curl http://localhost:7777
+time:  2016-09-21 14:09:44.32377994 +0000 UTC
+conns: 3
+```
+
+Victory!
+
+Victory?
+Actually, there is a "slight" problem with this server: it is *racy*.
+
+Add a `time.Sleep(2*time.Second)` just afer the `clients++` statement and
+restart the server with:
+
+```sh
+$> go run -race ./web-02.go
+```
+
+Then, in another terminal:
+```sh
+$> for i in `seq 20`; do curl http://localhost:7777; done;
+```
+
+and, concurrently, in yet another one:
+```sh
+$> for i in `seq 20`; do curl http://localhost:7777; done;
+```
+
+You should see something like that in the `web-02.go` terminal:
+
+```sh
+==================
+WARNING: DATA RACE
+Read at 0x0000008b94b0 by goroutine 10:
+  main.rootHandle()
+      /home/binet/go/src/web-02.go:17 +0x52
+  net/http.HandlerFunc.ServeHTTP()
+      /usr/lib/go/src/net/http/server.go:1726 +0x51
+  net/http.(*ServeMux).ServeHTTP()
+      /usr/lib/go/src/net/http/server.go:2022 +0xa1
+  net/http.serverHandler.ServeHTTP()
+      /usr/lib/go/src/net/http/server.go:2202 +0xbb
+  net/http.(*conn).serve()
+      /usr/lib/go/src/net/http/server.go:1579 +0x5f6
+
+Previous write at 0x0000008b94b0 by goroutine 9:
+  main.rootHandle()
+      /home/binet/go/src/web-02.go:17 +0x71
+  net/http.HandlerFunc.ServeHTTP()
+      /usr/lib/go/src/net/http/server.go:1726 +0x51
+  net/http.(*ServeMux).ServeHTTP()
+      /usr/lib/go/src/net/http/server.go:2022 +0xa1
+  net/http.serverHandler.ServeHTTP()
+      /usr/lib/go/src/net/http/server.go:2202 +0xbb
+  net/http.(*conn).serve()
+      /usr/lib/go/src/net/http/server.go:1579 +0x5f6
+
+Goroutine 10 (running) created at:
+  net/http.(*Server).Serve()
+      /usr/lib/go/src/net/http/server.go:2293 +0x540
+  net/http.(*Server).ListenAndServe()
+      /usr/lib/go/src/net/http/server.go:2219 +0x122
+  net/http.ListenAndServe()
+      /usr/lib/go/src/net/http/server.go:2351 +0xee
+  main.main()
+      /home/binet/go/src/web-02.go:13 +0x121
+
+Goroutine 9 (running) created at:
+  net/http.(*Server).Serve()
+      /usr/lib/go/src/net/http/server.go:2293 +0x540
+  net/http.(*Server).ListenAndServe()
+      /usr/lib/go/src/net/http/server.go:2219 +0x122
+  net/http.ListenAndServe()
+      /usr/lib/go/src/net/http/server.go:2351 +0xee
+  main.main()
+      /home/binet/go/src/web-02.go:13 +0x121
+==================
+```
+
+_ie:_ the race occurs at line `17` (the `clients++` line) between 2 goroutines
+created at line `13` (the `http.ListenAndServe` line).
+
+Indeed: in a `net/http` web server, each client request is served and handled
+in a different goroutine.
+Modifying the global variable `clients` won't fly and is a *BUG*.
+
+The fix is to guard the modification of `clients` with a mutex:
+
+```go
+var (
+	mu      sync.Mutex
+	clients = 0
+)
+
+func rootHandle(w http.ResponseWriter, r *http.Request) {
+	mu.Lock()
+	defer mu.Unlock()
+	clients++
+	time.Sleep(2 * time.Second)
+	fmt.Fprintf(w, "time:  %v\n", time.Now().UTC())
+	fmt.Fprintf(w, "conns: %v\n", clients)
+}
+```
+
+*Take home message:* requests are handled concurrently, **ALWAYS** protect
+global state (or use `goroutines` and `chans`.)
+
+## Displaying images
+
+Up to now, we just displayed text in our handlers.
+Let's try to display an image.
+The `Go` standard library has support for a reasonable set of image formats
+with the `image/...` packages (`image/png`, `image/jpeg` and `image/gif`)
+and the `golang.org/x/image/...` has support for a few more (`tiff`, `bmp`,
+`riff`, `vp8`, `webp`.)
+
+We'll use `image/png`.
+
+`web-03.go` starts like before, with the `main` function and a `rootHandle`,
+but we'll add a new `imageHandle` registered with `"/img"`:
+
+```go
+func main() {
+	fmt.Println("please connect to localhost:7777")
+	http.HandleFunc("/", rootHandle)
+	http.HandleFunc("/img", imageHandle)
+	log.Fatal(http.ListenAndServe(":7777", nil))
+}
+
+func rootHandle(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, rootPage)
+}
+
+const rootPage = `<html>
+<head>
+	<title>Displaying images with Go</title>
+</head>
+
+<body>
+	<h1>Image display</h1>
+	<div id="content"><img src="/img"></img></div>
+</body>
+`
+```
+
+Now comes the real meat.
+We need to generate an image, say a `100x100` PNG image.
+Looking at the `image` documentation:
+
+```go
+$> go doc image RGBA
+type RGBA struct {
+	// Pix holds the image's pixels, in R, G, B, A order. The pixel at
+	// (x, y) starts at Pix[(y-Rect.Min.Y)*Stride + (x-Rect.Min.X)*4].
+	Pix []uint8
+	// Stride is the Pix stride (in bytes) between vertically adjacent pixels.
+	Stride int
+	// Rect is the image's bounds.
+	Rect Rectangle
+}
+    RGBA is an in-memory image whose At method returns color.RGBA values.
+
+
+func NewRGBA(r Rectangle) *RGBA
+[...]
+```
+
+it would seem `image.RGBA` looks like something we'd want to use.
+We first need to create the bounding box (_a.k.a._ the canvas) for that image
+by way of an `image.Rectangle`:
+
+```go
+const sz = 50
+canvas := image.Rect(0, 0, 2*sz, 2*sz)
+img := image.NewRGBA(canvas)
+```
+
+Let's fill it with some "nice" color: a gray background.
+
+There is also a package for that: `image/draw` and its `Draw` function.
+
+```
+$> go doc image/draw Draw
+func Draw(dst Image, r image.Rectangle, src image.Image, sp image.Point, op Op)
+    Draw calls DrawMask with a nil mask.
+```
+
+Let's use that:
+
+```go
+// draw a gray background
+draw.Draw(img, canvas, image.NewUniform(color.RGBA{0x66, 0x66, 0x66, 0xff}), image.ZP, draw.Src)
+```
+
+For some additional fun, let's also draw a randomly sized, randomly centered
+red square inside the previous image.
+The randomness is easily addressed via the `math/rand` package and its `rand.Intn`
+global function (which is goroutine safe, by the way):
+
+```go
+x1 := rand.Intn(sz)
+y1 := rand.Intn(sz)
+x2 := rand.Intn(sz) + sz
+y2 := rand.Intn(sz) + sz
+```
+
+Drawing the red square is done with our `image/draw.Draw` friend:
+
+```go
+draw.Draw(
+	img,
+	image.Rect(x1, y1, x2, y2),
+	image.NewUniform(color.RGBA{0xff, 0x00, 0x00, 0xff}),
+	image.ZP, draw.Src,
+)
+```
+
+and voila, we have our nice image.
+
+We still need to encode it as a PNG image, though.
+Well, that's done with the `image/png.Encode` function:
+
+```
+$> go doc image/png Encode
+func Encode(w io.Writer, m image.Image) error
+    Encode writes the Image m to w in PNG format. Any Image may be encoded, but
+    images that are not image.NRGBA might be encoded lossily.
+```
+
+so here we go, the complete `imageHandle` function code, with error handling:
+
+```go
+func imageHandle(w http.ResponseWriter, r *http.Request) {
+	const sz = 50
+	// create the whole image canvas
+	canvas := image.Rect(0, 0, 2*sz, 2*sz)
+	img := image.NewRGBA(canvas)
+	// draw a gray background
+	draw.Draw(img, canvas, image.NewUniform(color.RGBA{0x66, 0x66, 0x66, 0xff}), image.ZP, draw.Src)
+	// create a randomly sized, randomly centered, red square
+	x1 := rand.Intn(sz)
+	y1 := rand.Intn(sz)
+	x2 := rand.Intn(sz) + sz
+	y2 := rand.Intn(sz) + sz
+	draw.Draw(img, image.Rect(x1, y1, x2, y2), image.NewUniform(color.RGBA{0xff, 0x00, 0x00, 0xff}), image.ZP, draw.Src)
+	err := png.Encode(w, img)
+	if err != nil {
+		log.Printf("error encoding image: %v\n", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+```
+
+Open your browser at `http://localhost:7777` and refresh to see the red square
+wander around inside the gray square.
+
+## Websockets
+
+Up to now, our servers were rather dull: a client connected, got some response
+from the server and that was it.
+If the client wanted some new data from the server, a new connection had to
+be established.
+
+This is a problem solved by websockets: they allow bi-directional streams
+between the client and the server.
+
+In this new server, we'll make the gray+red image generated previously
+refresh automatically by having the server generate them continuously (say,
+every 2 seconds) and notify the client.
+On the client side, a bit of javascript code will display the new image when
+new data is available on the receiving end of the websocket.
+
+The `main` function is, again, pretty much the same:
+
+```go
+func main() {
+	fmt.Println("please connect to localhost:7777")
+	http.HandleFunc("/", rootHandle)
+	http.HandleFunc("/img", imageHandle)
+	http.Handle("/chan", websocket.Handler(chanHandler))
+	go generate(datac)
+	log.Fatal(http.ListenAndServe(":7777", nil))
+}
+```
+
+we've just added a new end point for the websocket, using `websocket.Handler`
+from the `golang.org/x/net/websocket` package.
+Also, we've launched a new goroutine that takes a global `datac` channel:
+
+```go
+var datac = make(chan string)
+```
+
+`datac` will hold the `base64` representation of our image.
+There are other, cleaner, ways to exchange image data between a web client
+and a web server, but for this simple example, it will do.
+
+Next, is the `generate` function.
+We want a new image to be generated every 2 seconds and sent down the channel.
+This sounds like a job for a `time.Ticker` !
+
+```go
+func generate(datac chan string) {
+	tick := time.NewTicker(2 * time.Second)
+	defer tick.Stop()
+	for range tick.C {
+		buf := new(bytes.Buffer)
+		err := png.Encode(buf, newImage())
+		if err != nil {
+			log.Fatal(err)
+		}
+		datac <- base64.StdEncoding.EncodeToString(buf.Bytes())
+	}
+}
+```
+
+And, indeed, it is.
+By now, the code should be pretty self explanatory:
+
+- we create a ticker
+- we iterate over the ticks _via_ the `for range` statement
+- for each tick, we create a new image (`newImage` is just a refactored
+  `imageHandler` where the mechanics of the image creation have been extracted
+  from the `imageHandler` web handling and put into a new function)
+- we encode the image into PNG, inside a temporary buffer
+- the buffer is then sent as a `base64` string down the channel,
+  using the `encoding/base64` package
+
+Next, the `chanHandler` part.
+The documentation of `golang.org/x/net/websocket` is a bit lacking, but,
+in a nutshell, a handler accepting websocket connections should have the
+following signature:
+
+```go
+func wsHandler(*websocket.Conn) { ... }
+```
+
+Once a websocket connection has been established between a client and a server,
+data can flow both ways.
+For our use case, we are only interested in sending data from the server,
+to the client.
+Thus, we just have to extract data from the global `datac` channel (which
+contains our stringified images) and send it to the client:
+
+```go
+func chanHandler(ws *websocket.Conn) {
+	for data := range datac {
+		err := websocket.Message.Send(ws, data)
+		if err != nil {
+			log.Printf("error sending data: %v\n", err)
+			return
+		}
+	}
+}
+```
+
+Here, we used the basic `websocket.Message` codec.
+There is a `websocket.JSON` one which could exchange data in JSON.
+
+Finally, we need to handle the client end of the websocket.
+This is done with a bit of javascript in the `"/"` page:
+
+```go
+const rootPage = `<html>
+<head>
+	<title>Displaying images with Go</title>
+	<script type="text/javascript">
+	var sock = null;
+
+	function update(data) {
+		var img = document.getElementById("img-node");
+		img.src = "data:image/png;base64,"+data;
+	};
+
+	window.onload = function() {
+		sock = new WebSocket("ws://localhost:7777/chan");
+		sock.onmessage = function(event) {
+			update(event.data);
+		};
+	};
+	</script>
+</head>
+
+<body>
+	<h1>Image display</h1>
+	<div id="content"><img id="img-node" src="" alt="N/A"/></div>
+</body>
+`
+```
+
+We create a websocket listening on `"/chan"` and register the `update`
+function with the `onmessage` callback of that socket.
+`update` will then modify the `"img-node"` node in the DOM to append the
+string-ified `base64` representation of the image.
+
+and, voila.
+
+Here is the complete code:
+
+```go
+package main
+
+import (
+	"bytes"
+	"encoding/base64"
+	"fmt"
+	"image"
+	"image/color"
+	"image/draw"
+	"image/png"
+	"log"
+	"math/rand"
+	"net/http"
+	"time"
+
+	"golang.org/x/net/websocket"
+)
+
+var (
+	datac = make(chan string)
+)
+
+func main() {
+	fmt.Println("please connect to localhost:7777")
+	http.HandleFunc("/", rootHandle)
+	http.HandleFunc("/img", imageHandle)
+	http.Handle("/chan", websocket.Handler(chanHandler))
+	go generate(datac)
+	log.Fatal(http.ListenAndServe(":7777", nil))
+}
+
+func rootHandle(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, rootPage)
+}
+
+const rootPage = `<html>
+<head>
+	<title>Displaying images with Go</title>
+	<script type="text/javascript">
+	var sock = null;
+
+	function update(data) {
+		var img = document.getElementById("img");
+		img.src = "data:image/png;base64,"+data;
+	};
+
+	window.onload = function() {
+		sock = new WebSocket("ws://localhost:7777/chan");
+		sock.onmessage = function(event) {
+			update(event.data);
+		};
+	};
+	</script>
+</head>
+
+<body>
+	<h1>Image display</h1>
+	<div id="content"><img id="img" src="" alt="N/A"/></div>
+</body>
+`
+
+func imageHandle(w http.ResponseWriter, r *http.Request) {
+	img := newImage()
+	err := png.Encode(w, img)
+	if err != nil {
+		log.Printf("error encoding image: %v\n", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+}
+
+func newImage() image.Image {
+	const sz = 50
+	// create the whole image canvas
+	canvas := image.Rect(0, 0, 2*sz, 2*sz)
+	img := image.NewRGBA(canvas)
+	// draw a gray background
+	draw.Draw(img, canvas, image.NewUniform(color.RGBA{0x66, 0x66, 0x66, 0xff}), image.ZP, draw.Src)
+	// create a randomly sized, randomly centered, red square
+	x1 := rand.Intn(sz)
+	y1 := rand.Intn(sz)
+	x2 := rand.Intn(sz) + sz
+	y2 := rand.Intn(sz) + sz
+	draw.Draw(img, image.Rect(x1, y1, x2, y2), image.NewUniform(color.RGBA{0xff, 0x00, 0x00, 0xff}), image.ZP, draw.Src)
+	return img
+}
+
+func chanHandler(ws *websocket.Conn) {
+	for data := range datac {
+		err := websocket.Message.Send(ws, data)
+		if err != nil {
+			log.Printf("error sending data: %v\n", err)
+			return
+		}
+	}
+}
+
+func generate(datac chan string) {
+	tick := time.NewTicker(2 * time.Second)
+	defer tick.Stop()
+	for range tick.C {
+		buf := new(bytes.Buffer)
+		err := png.Encode(buf, newImage())
+		if err != nil {
+			log.Fatal(err)
+		}
+		datac <- base64.StdEncoding.EncodeToString(buf.Bytes())
+	}
+}
+```
