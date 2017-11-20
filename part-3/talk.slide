@@ -59,6 +59,58 @@ And build/install like so:
 For more informations: [[https://golang.org/cmd/cgo/][cmd/cgo]]
 
 
+* Calling Go from C
+
+* Calling Go from C
+
+Let's say we have a huge codebase in CPython.
+
+We've reached a huge bottleneck in performances and we can't really scale out of it.
+What can we do?
+
+Usually, in CPython, when performances are bad we rewrite the bottleneck in C and package it up as a C-module extension that can then be imported and used from python.
+
+Instead of dropping down to C, we can actually use Go (and its concurrency building blocks.)
+
+Let's do that.
+
+* Go code
+
+The code we want to expose to C and Python is the following:
+
+.code _code/pkg.go /^func Add/,/^}/
+
+* 
+
+To expose it to C, we just need to prepend the following comment to it:
+
+  //export Add
+
+put it inside a `package` `main` and import the `"C"` package:
+
+.code _code/pkg.go
+
+and build it with the special `-buildmode=c-shared` flag:
+
+ $> go build -buildmode=c-shared -o pkg.so pkg.go
+
+* 
+
+This has created a C shared library `pkg.so`:
+
+ $> file ./pkg.so
+ ./pkg.so: ELF 64-bit LSB shared object, x86-64, version 1 (SYSV), dynamically linked, [...]
+
+that can be used from CPython via _e.g._, the `ctypes` module:
+
+ $> python
+ >>> import ctypes
+ >>> lib = ctypes.cdll.LoadLibrary("./pkg.so")
+ >>> lib.Add.args = [ctypes.c_int,ctypes.c_int]
+ >>> lib.Add.ret = ctypes.c_int
+ >>> lib.Add(4,2)
+ 6
+
 * Acknowledgements / resources
 
 Most of this tutorial has been extracted or adapted from:
