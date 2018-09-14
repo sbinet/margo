@@ -1,0 +1,198 @@
+Introduction to Go (part 7)
+MarGo Workshop
+
+Sébastien Binet
+CNRS/IN2P3/LPC
+binet@clermont.in2p3.fr
+@0xb1ns
+
+* Prelude
+
+* Prelude
+
+Sources and resources for this workshop are here:
+
+.link https://github.com/sbinet/margo
+
+
+License: BSD-3.
+
+* Exercize 1
+
+*Goal:* from the chromosomes stored in a [[https://www.ncbi.nlm.nih.gov/sra/docs/submitformats/#fasta-with-qual-file-pairs][FASTA]] file and the associated annotations from a [[http://gmod.org/wiki/GFF][GFF]] file, *find* the nucleotide sequences of the CDS.
+
+.link https://cern.ch/binet/tuto-biogo/extract-gff/S_cerevisiae_chromosomes.fna
+.link https://cern.ch/binet/tuto-biogo/extract-gff/S_cerevisiae_annotations.gff
+
+_Hints:_
+
+- look at the structure of the files
+- divide and conquer (small steps)
+
+_Bonus:_
+
+- format the output file as `FASTA`
+- make the final program take the `.fna` and `.gff` files as arguments
+- make the final program also handle input files served by `http`
+ 
+
+* Exercize 1 (cont'd)
+
+`GFF` file excerpt:
+
+  $> head S_cerevisiae_annotations.gff
+  ##gff-version 3
+  #!gff-spec-version 1.20
+  #!processor NCBI annotwriter
+  #!genome-build R64-1-1
+  #!genome-build-accession NCBI_Assembly:GCA_000146045.2
+  ##sequence-region BK006935.2 1 230218
+  ##species http://www.ncbi.nlm.nih.gov/Taxonomy/Browser/wwwtax.cgi?id=559292
+  BK006935.2	tpg	region	1	230218	.	+	.	ID=id0;Dbxref=taxon:559292;Name=I;chromosome=I;gbkey=Src;genome=chromosome;mol_type=genomic DNA;strain=S288c
+  BK006935.2	tpg	region	1	801	.	-	.	ID=id1;Dbxref=SGD:S000028862;Note=TEL01L%3B Telomeric region on the left arm of Chromosome I%3B composed of an X element core sequence%2C X element combinatorial repeats%2C and a short terminal stretch of telomeric repeats;gbkey=telomere
+  BK006935.2	tpg	region	707	776	.	+	.	ID=id2;Dbxref=SGD:S000121252;Note=ARS102~Autonomously Replicating Sequence;gbkey=rep_origin
+  [...]
+  BK006935.2      tpg     CDS     65778   67520   .       -       0       ID=cds28;Parent=rna28;Dbxref=SGD:S000000038,NCBI_GP:DAA06946.1;Name=DAA06946.1;Note=G1 cyclin involved in cell cycle progression%3B activates Cdc28p kinase to promote the G1 to S phase transition%3B plays a role in regulating transcription of the other G1 cyclins%2C CLN1 and CLN2%3B regulated by phosphorylation and proteolysis%3B acetly-CoA induces CLN3 transcription in response to nutrient repletion to promote cell-cycle entry.;gbkey=CDS;gene=CLN3;product=cyclin CLN3;protein_id=DAA06946.1
+
+* Exercize 1 (cont'd)
+
+`FASTA` excerpt:
+
+  $> head S_cerevisiae_chromosomes.fna 
+  >BK006935.2 TPA_inf: Saccharomyces cerevisiae S288c chromosome I, complete sequence
+  ccacaccacacccacacacccacacaccacaccacacaccacaccacacccacacacacacatCCTAACACTACCCTAAC
+  ACAGCCCTAATCTAACCCTGGCCAACCTGTCTCTCAACTTACCCTCCATTACCCTGCCTCCACTCGTTACCCTGTCCCAT
+  TCAACCATACCACTCCGAACCACCATCCATCCCTCTACTTACTACCACTCACCCACCGTTACCCTCCAATTACCCATATC
+  CAACCCACTGCCACTTACCCTACCATTACCCTACCATCCACCATGACCTACTCACCATACTGTTCTTCTACCCACCATAT
+  TGAAACGCTAACAAATGATCGTAAATAACACACACGTGCTTACCCTACCACTTTATACCACCACCACATGCCATACTCAC
+  CCTCACTTGTATACTGATTTTACGTACGCACACGGATGCTACAGTATATACCATCTCAAACTTACCCTACTCTCAGATTC
+  CACTTCACTCCATGGCCCATCTCTCACTGAATCAGTACCAAATGCACTCACATCATTATGCACGGCACTTGCCTCAGCGG
+  TCTATACCCTGTGCCATTTACCCATAACGCCCATCATTATCCACATTTTGATATCTATATCTCATTCGGCGGTcccaaat
+  attgtataaCTGCCCTTAATACATACGTTATACCACTTTTGCACCATATACTTACCACTCCATTTATATACACTTATGTC
+
+* 
+
+- Reference sequence: link between the 2 files
+- Filter on the type of element (CDS, Coding sequence)
+- Position + orientation
+- name of the sequence
+
+* Exercize 1 -- Result
+
+ $> time ./extract-gff ./S_cerevisiae_chromosomes.fna ./S_cerevisiae_annotations.gff
+ gff: opening FASTA file "./S_cerevisiae_chromosomes.fna"...
+ gff: found 16 identified sequences
+ gff: opening GFF file "./S_cerevisiae_annotations.gff"...
+ gff: found 5893 CDS
+ 
+ real 0m0.347s
+ user 0m0.180s
+ sys  0m0.191s
+
+Comparison with the equivalent Python script:
+
+ $> time python2 ./extract-gff.py
+ Lecture du fichier fasta...
+ =>16 séquences identifiées.
+ Lecture du fichier gff...
+ =>5893 CDS identifiées.
+ 
+ real 0m3.640s
+ user 0m2.302s
+ sys  0m1.336s
+
+* Extra bonus: biogo
+
+A Biology-oriented community is building around [[https://github.com/biogo]].
+
+See if you can rewrite the previous program to leverage:
+
+- `github.com/biogo/biogo/io/seqio/fasta`
+- `github.com/biogo/biogo/seq/linear`
+- `github.com/biogo/biogo/alphabet`
+
+Documentation:
+
+.link https://godoc.org/github.com/biogo/biogo
+
+## * Solution
+## 
+## .link https://gist.github.com/sbinet/8c563672663370d60685572b7944a542
+
+* Exercize 2
+
+*Goal:* Regroup the read counts from the *htc* files (`HTSeqCount`) to build a counting table for the locus set of all the libraries.
+Print the depth of each library.
+
+.link https://cern.ch/binet/tuto-biogo/merge-htc
+
+_Hint:_ mind the data type (`int`, `string`, ...)
+
+_Bonus_:
+
+- sort the table by gene name and libraries
+- filter the genes for which the average count is < 5
+
+* 
+
+ $> cat Mutant-A_1.htc
+ LOCUS_0805      3144
+ LOCUS_2984      6600
+ [...]
+ LOCUS_0368      7366
+ LOCUS_0772      192
+ LOCUS_1889      5087
+ LOCUS_0274      8446
+ LOCUS_0330      8631
+ __no_feature    8483
+ __ambiguous     2706
+ __too_low_aQual 0
+ __not_aligned   0
+ __alignment_not_unique 0
+
+* Exercize 2 -- Results
+
+  $> time ./merge-htc 
+  Mutant-A_1:	14524262
+  Mutant-A_2:	14540163
+  Mutant-A_3:	14561692
+  Mutant-B_1:	14400760
+  Mutant-B_2:	14397467
+  Mutant-B_3:	14374960
+  Mutant-C_1:	14575192
+  Mutant-C_2:	14598634
+  Mutant-C_3:	14609946
+  Wild_1:	14461828
+  Wild_2:	14485370
+  Wild_3:	14467297
+  
+  real 0m0.063s
+  user 0m0.023s
+  sys  0m0.042s
+
+* Exercize 2 -- Results
+
+Compared to Python:
+
+  $> time python2 ./merge-htc.py
+  Mutant-A_1:	14524262
+  Mutant-A_2:	14540163
+  Mutant-A_3:	14561692
+  Mutant-B_1:	14400760
+  Mutant-B_2:	14397467
+  Mutant-B_3:	14374960
+  Mutant-C_1:	14575192
+  Mutant-C_2:	14598634
+  Mutant-C_3:	14609946
+  Wild_1:	14461828
+  Wild_2:	14485370
+  Wild_3:	14467297
+  
+  real 0m0.111s
+  user 0m0.104s
+  sys  0m0.007s
+
+## * Solution
+## 
+## .link https://gist.github.com/sbinet/527c684dfee3dfadf89a55513ca1205d
+
