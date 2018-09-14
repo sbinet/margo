@@ -1,5 +1,5 @@
 Introduction to Go (part 2)
-Go Workshop@Marseille, 2017-11-20
+MarGo Workshop
 
 Sébastien Binet
 CNRS/IN2P3/LPC
@@ -12,7 +12,7 @@ binet@clermont.in2p3.fr
 
 Sources and resources for this workshop are here:
 
-.link https://github.com/sbinet/margo-2017
+.link https://github.com/sbinet/margo
 
 
 License: BSD-3.
@@ -372,7 +372,7 @@ Algorithm:
 
 Let's create a new program called `indexer`.
 
-Initial code in: [[https://github.com/sbinet/margo-2017/blob/master/cmd/indexer/main.go][github.com/sbinet/margo-2017/cmd/indexer]]
+Initial code in: [[https://github.com/sbinet/margo/blob/master/cmd/indexer/main.go][github.com/sbinet/margo/cmd/indexer]]
 
 * Processing a Go source file
 

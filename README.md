@@ -1,16 +1,17 @@
-margo-2017
-===================
+margo
+=====
 
-`margo-2017` is a simple repository holding sources for an introduction to `Go` held in Marseille, 2017.
+`margo` (the Marvelous Go tutorial) is a simple repository holding sources for an introduction to `Go`.
 
 The slides are here:
 
-- [part 1 (basic intro)](https://talks.godoc.org/github.com/sbinet/margo-2017/part-1/talk.slide)
-- [part 2 (concurrency)](https://talks.godoc.org/github.com/sbinet/margo-2017/part-2/talk.slide)
-- [part 3 (cgo)](https://talks.godoc.org/github.com/sbinet/margo-2017/part-3/talk.slide)
-- [part 4 (web servers)](https://talks.godoc.org/github.com/sbinet/margo-2017/part-4/talk.slide)
-- [part 5 (a DAQ application)](https://talks.godoc.org/github.com/sbinet/margo-2017/part-5/talk.slide)
-- [part 6 (a chat application)](https://talks.godoc.org/github.com/sbinet/margo-2017/part-6/talk.slide)
+- [part 1 (basic intro)](https://talks.godoc.org/github.com/sbinet/margo/part-1/talk.slide)
+- [part 2 (concurrency)](https://talks.godoc.org/github.com/sbinet/margo/part-2/talk.slide)
+- [part 3 (cgo)](https://talks.godoc.org/github.com/sbinet/margo/part-3/talk.slide)
+- [part 4 (web servers)](https://talks.godoc.org/github.com/sbinet/margo/part-4/talk.slide)
+- [part 5 (a DAQ application)](https://talks.godoc.org/github.com/sbinet/margo/part-5/talk.slide)
+- [part 6 (a chat application)](https://talks.godoc.org/github.com/sbinet/margo/part-6/talk.slide)
+- [part 7 (biology)](https://talks.godoc.org/github.com/sbinet/margo/part-7/talk.slide)
 
 ## Bootstrapping the work environment
 
@@ -75,12 +76,12 @@ For this part, you'll need the following tools installed to actually retrieve th
 Without further ado:
 
 ```sh
-$ go get -u -v github.com/sbinet/margo-2017/cmd/margo-hello
-github.com/sbinet/margo-2017 (download)
+$ go get -u -v github.com/sbinet/margo/cmd/margo-hello
+github.com/sbinet/margo (download)
 ```
 
 `go get` downloaded (cloned, in `git` speak) the whole
-`github.com/sbinet/margo-2017` repository (under `$GOPATH/src`) and
+`github.com/sbinet/margo` repository (under `$GOPATH/src`) and
 compiled the `margo-hello` command.
 As the compilation was successful, it also installed the `margo-hello`
 command under `$GOPATH/bin`.
@@ -89,7 +90,7 @@ The `margo-hello` command is now available from your shell:
 
 ```sh
 $ margo-hello
-Hello Marseille-2017!
+Hello MarGo!
 
 $ margo-hello you
 Hello you!

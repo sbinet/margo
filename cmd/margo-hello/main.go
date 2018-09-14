@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	who := "Marseille-2017"
+	who := "MarGo"
 	if len(os.Args) > 1 {
 		who = os.Args[1]
 	}

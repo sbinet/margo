@@ -1,5 +1,5 @@
 Introduction to Go (part 4)
-Go Workshop@Marseille, 2017-11-20
+MarGo Workshop
 
 Sébastien Binet
 CNRS/IN2P3/LPC
@@ -12,7 +12,7 @@ binet@clermont.in2p3.fr
 
 Sources and resources for this workshop are here:
 
-.link https://github.com/sbinet/margo-2017
+.link https://github.com/sbinet/margo
 
 
 License: BSD-3.
@@ -121,15 +121,15 @@ Let's try that:
 and in another terminal:
 
   $> curl http://localhost:7777
-  time:  2017-07-03 16:20:27.679248798 +0000 UTC
+  time:  2018-07-03 16:20:27.679248798 +0000 UTC
   conns: 1
   
   $> curl http://localhost:7777
-  time:  2017-07-03 16:20:32.073097799 +0000 UTC
+  time:  2018-07-03 16:20:32.073097799 +0000 UTC
   conns: 2
   
   $> curl http://localhost:7777
-  time:  2017-07-03 16:20:35.153228977 +0000 UTC
+  time:  2018-07-03 16:20:35.153228977 +0000 UTC
   conns: 3
 
 *Victory!*

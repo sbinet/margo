@@ -1,5 +1,5 @@
 Introduction to Go (part 3)
-Go Workshop@Marseille, 2017-11-20
+MarGo Workshop
 
 Sébastien Binet
 CNRS/IN2P3/LPC
@@ -12,7 +12,7 @@ binet@clermont.in2p3.fr
 
 Sources and resources for this workshop are here:
 
-.link https://github.com/sbinet/margo-2017
+.link https://github.com/sbinet/margo
 
 
 License: BSD-3.
