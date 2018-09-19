@@ -88,6 +88,7 @@ A channel in Go provides a connection between two goroutines, allowing them to c
 .code _code/helpers.go /START1/,/STOP1/
 .code _code/helpers.go /START2/,/STOP2/
 .code _code/helpers.go /START3/,/STOP3/
+.code _code/helpers.go /START4/,/STOP4/
 
 * Using channels
 
@@ -280,6 +281,9 @@ Create a new channel `ch` and kick off the walker:
 
 Then read and print 10 values from the channel. It should be the numbers 1, 2, 3, ..., 10.
 
+The documentation for `Tree` can be found [[https://godoc.org/golang.org/x/tour/tree#Tree][here]].
+
+* 
 
 - Implement the `Same` function using `Walk` to determine whether `t1` and `t2` store the same values.
 

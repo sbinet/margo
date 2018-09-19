@@ -25,4 +25,11 @@ func main() {
 	// STOP3 OMIT
 
 	_ = value
+
+	// START4 OMIT
+	// Closing a channel.
+	// No data can be received from or sent to this channel.
+	// (the program will panic if you try to send to a closed channel.)
+	close(c) // HL
+	// STOP4 OMIT
 }
