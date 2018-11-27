@@ -289,7 +289,8 @@ The documentation for `Tree` can be found [[https://godoc.org/golang.org/x/tour/
 
 - Test the `Same` function.
 
-`Same(tree.New(1),` `tree.New(1))` should return `true`, and `Same(tree.New(1),` `tree.New(2))` should return `false`.
+`Same(tree.New(1),` `tree.New(1))` should return `true`.
+`Same(tree.New(1),` `tree.New(2))` should return `false`.
 
 The documentation for `Tree` can be found [[https://godoc.org/golang.org/x/tour/tree#Tree][here]].
 
