@@ -112,7 +112,11 @@ The environmental system probe sends data of the form:
 
 Try to write a decoder that can understand and read the following file:
 
-.link https://github.com/sbinet/margo/
+.link https://github.com/sbinet/margo/blob/master/daq/testdata/data.bin
+
+* Decoder
+
+.code _code/decoder-start.go
 
 * Acknowledgements / resources
 
