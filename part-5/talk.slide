@@ -19,6 +19,100 @@ License: BSD-3.
 
 * Data Acquisition application
 
+* Introduction
+
+This tutorial will guide you through writing a little DAQ system:
+
+- reading and decoding a binary stream of data
+- handling endianness
+- creating a distributed system
+- displaying data
+
+* DAQ client -- Data format
+
+In the first part, we'll focus on the client:
+
+- reading data from the DAQ server
+- decoding the data format
+- printing summary data
+
+Before reading data from the DAQ server, we'll write a package to decode the data format.
+
+* Data format
+
+Usually DAQ systems send a continuous stream of data where each datum consists of:
+
+- a data header, specifying the type of data, its length and, optionally some other metadata,
+- a data payload which is application specific.
+
+The on-disk format is the following:
+
+  [ 0 -  4) magic header: [0, 'd', 'a', 'q']
+  [ 4 -  8) magic start block: 0xdeadcafe
+  [ 8 - 16) payload length -------------+
+  [16 - 20) payload checksum (adler-32) |
+  [20 - 28) run-number (uint64)         +- header
+  [28 - 36) event number (uint64) ------+
+  [.. - ..)   payload
+  [.. - ..) magic end block: 0xdeadfeed
+
+One can have many pairs `header`/`payload` in a file or stream:
+
+  [0xdeadcafe][header | payload][0xdeadfeed][0xdeadcafe][hdr | data][0xdeadfeed][...]
+
+* Parsing a DAQ file
+
+We need to be able to parse or decode DAQ data streams.
+We'll start with a single file containing:
+
+- a magic DAQ file header `[0,` `'d',` `'a',` `'q']`
+- a magic block start `0xdeadcafe`
+- a header
+- some payload(s)
+- a magic block end `0xdeadfeed`
+
+Our simple DAQ system will only be able to decode payloads from 2 subsystems:
+
+- a calorimeter
+- an environmental system probe
+
+* 
+
+Each sub detector payload is prepended with a single byte notifying what kind of payload is being sent:
+
+- `0`: calorimeter data
+- `1`: env. system data
+
+so:
+
+ [detector kind (uint8)] ---+
+ [detector payload]         |
+ [detector kind (uint8)]    +--- payload
+ [detector payload]         |
+ [...]                      |
+              --------------+
+ [0xdeadfeed]
+
+* 
+
+The calorimeter is a simple `1024x1024` grid of cells that sends data of the form:
+
+  [ 0 -  8) cell id (uint64)
+  [ 8 - 16) calibrated energy measured by the cell (float64)
+
+The environmental system probe sends data of the form:
+
+  [ 0 -   8) length of the name of the probe (uint64)
+  [ 8 - len) name of the probe
+  [ ..-  +8) hygrometry (float64)
+  [ ..-  +8) pressure (float64)
+  [ ..-  +8) temperature (float64)
+
+* Decoder
+
+Try to write a decoder that can understand and read the following file:
+
+.link https://github.com/sbinet/margo/
 
 * Acknowledgements / resources
 
