@@ -19,6 +19,205 @@ License: BSD-3.
 
 * Data Acquisition application
 
+* Introduction
+
+This tutorial will guide you through writing a little DAQ system:
+
+- reading and decoding a binary stream of data
+- handling endianness
+- creating a distributed system
+- displaying data
+
+* DAQ client -- Data format
+
+In the first part, we'll focus on the client:
+
+- reading data from the DAQ server
+- decoding the data format
+- printing summary data
+
+Before reading data from the DAQ server, we'll write a package to decode the data format.
+
+* Data format
+
+Usually DAQ systems send a continuous stream of data where each datum consists of:
+
+- a header, specifying the type of data, its length and, optionally some other metadata,
+- a data payload which is application specific.
+
+The on-disk format is the following:
+
+  [ 0 -  4) magic header: [0, 'd', 'a', 'q']
+  [ 4 -  8) magic start event block: 0xdeadcafe
+  [ 8 - 16) payload length -------------+
+  [16 - 20) payload checksum (adler-32) |
+  [20 - 28) run-number (uint64)         +- header
+  [28 - 36) event number (uint64) ------+
+  [.. - ..)   event payload
+  [.. - ..) magic end event block: 0xdeadfeed
+
+One can have many pairs `header`/`payload` in a file or byte stream:
+
+  [0xdeadcafe][header | payload][0xdeadfeed][0xdeadcafe][hdr | data][0xdeadfeed][...]
+
+- values are [[https://en.wikipedia.org/wiki/Endianness][Little Endian]] encoded.
+
+* Parsing a DAQ file
+
+We need to be able to parse or decode DAQ data streams.
+We'll start with a single file containing:
+
+- a magic DAQ file header `[0,` `'d',` `'a',` `'q']`
+- a magic start event block `0xdeadcafe`
+- a header
+- some payload(s)
+- a magic end event block `0xdeadfeed`
+
+Our simple DAQ system will only be able to decode payloads from 2 subsystems:
+
+- a calorimeter
+- an environmental system probe
+
+* 
+
+Each sub detector payload is prepended with a single byte notifying what kind of payload is being sent:
+
+- `0`: calorimeter data
+- `1`: env. system data
+
+and ends with `0xdecafeed`.
+
+so:
+
+ [detector kind (uint8)] ---+
+ [detector payload]         |
+ [0xdecafeed (uint32)]      |
+ [detector kind (uint8)]    +--- event payload
+ [detector payload]         |
+ [0xdecafeed (uint32)]      |
+ [...]        --------------+
+ [0xdeadfeed (uint32)]
+
+* 
+
+The calorimeter is a simple `16x16` grid of cells that sends data of the form:
+
+  [ 0 -  8) cell id (uint64)
+  [ 8 - 16) calibrated energy measured by the cell (float64)
+
+The environmental system probe sends data of the form:
+
+  [ 0 -   8) length of the name of the probe (uint64)
+  [ 8 - len) name of the probe
+  [ ..-  +8) hygrometry  (float64)
+  [ ..-  +8) pressure    (float64)
+  [ ..-  +8) temperature (float64)
+
+* Decoder
+
+Try to write a decoder that can understand and read the following file:
+
+.link https://github.com/sbinet/margo/blob/master/daq/testdata/data-01.bin
+
+  $> hexdump -C ./daq/testdata/data-01.bin
+  00000000  00 64 61 71 fe ca ad de  42 00 00 00 00 00 00 00  |.daq....B.......|
+  00000010  11 12 37 d3 2a 00 00 00  00 00 00 00 42 00 00 00  |..7.*.......B...|
+  00000020  00 00 00 00 00 92 10 00  00 00 00 00 00 00 00 00  |................|
+  00000030  00 00 00 24 40 ed fe ca  de 01 08 00 00 00 00 00  |...$@...........|
+  00000040  00 00 72 61 73 70 69 2d  30 31 5c 8f c2 f5 28 5c  |..raspi-01\...(\|
+  00000050  ef 3f 00 00 00 00 00 00  f0 3f 33 33 33 33 33 33  |.?.......?333333|
+  00000060  39 40 ed fe ca de ed fe  ad de                    |9@........|
+  0000006a
+
+
+* Decoder
+
+Try to write a decoder that can understand and read the following file:
+
+.link https://github.com/sbinet/margo/blob/master/daq/testdata/data-02.bin
+
+  $> hexdump -C ./daq/testdata/data-02.bin
+  00000000  00 64 61 71 fe ca ad de  42 00 00 00 00 00 00 00  |.daq....B.......|
+  00000010  11 12 37 d3 2a 00 00 00  00 00 00 00 42 00 00 00  |..7.*.......B...|
+  00000020  00 00 00 00 00 92 10 00  00 00 00 00 00 00 00 00  |................|
+  00000030  00 00 00 24 40 ed fe ca  de 01 08 00 00 00 00 00  |...$@...........|
+  00000040  00 00 72 61 73 70 69 2d  30 31 5c 8f c2 f5 28 5c  |..raspi-01\...(\|
+  00000050  ef 3f 00 00 00 00 00 00  f0 3f 33 33 33 33 33 33  |.?.......?333333|
+  00000060  39 40 ed fe ca de ed fe  ad de fe ca ad de 42 00  |9@............B.|
+  00000070  00 00 00 00 00 00 2e 14  5e e1 2a 00 00 00 00 00  |........^.*.....|
+  00000080  00 00 39 05 00 00 00 00  00 00 00 42 00 00 00 00  |..9........B....|
+  00000090  00 00 00 00 00 00 00 00  00 26 40 ed fe ca de 01  |.........&@.....|
+  000000a0  08 00 00 00 00 00 00 00  72 61 73 70 69 2d 30 32  |........raspi-02|
+  000000b0  5a 64 3b df 4f 8d ef 3f  52 b8 1e 85 eb 51 f0 3f  |Zd;.O..?R....Q.?|
+  000000c0  33 33 33 33 33 33 3c 40  ed fe ca de ed fe ad de  |333333<@........|
+  000000d0
+
+* Decoder
+
+.code _code/decoder-start.go
+
+* Results
+
+  $> daq-client ./daq/testdata/data-01.bin
+  hdr: daq.Header{Len:66, Sum:0xd3371211, RunNbr:42, EvtNbr:66}
+  cal: daq.Calorimeter{CellID:0x1092, Ene:10}
+  env: daq.Env{Name:"raspi-01", H:0.98, P:1, T:25.2}
+  
+  $> daq-client ./daq/testdata/data-02.bin
+  hdr: daq.Header{Len:66, Sum:0xd3371211, RunNbr:42, EvtNbr:66}
+  cal: daq.Calorimeter{CellID:0x1092, Ene:10}
+  env: daq.Env{Name:"raspi-01", H:0.98, P:1, T:25.2}
+  hdr: daq.Header{Len:66, Sum:0xe15e142e, RunNbr:42, EvtNbr:1337}
+  cal: daq.Calorimeter{CellID:0x42, Ene:11}
+  env: daq.Env{Name:"raspi-02", H:0.986, P:1.02, T:28.2}
+
+* Decoding a stream
+
+Now that we know how to decode a single file of DAQ data, we can go to the next level: reading a stream of data from a `net.Conn`.
+
+The new program will take an address to dial and read data from:
+
+  c, err := net.Dial("tcp", addr)
+  if err != nil {
+      log.Fatal(err)
+  }
+  defer c.Close()
+
+One just has to replace the decoder's input (_i.e._ `os.File`) with this new `net.Conn` connection.
+
+* 
+
+To make sure the new program works, you can run:
+
+ $> go get github.com/sbinet/margo/daq/cmd/daq-srv
+ $> daq-srv -listen localhost:8000
+
+and tell your programm to dial that address:
+
+ $> daq-client -dial localhost:8000
+
+* Displaying data
+
+* Displaying data
+
+This part will deal with displaying the data collected from the DAQ system via a web-based GUI.
+
+Reusing bits and pieces from the "web-server" from Part-4 of the MarGo tutorial, create a web server that:
+
+- takes a `host:port` address to read data from
+- extracts and decodes the DAQ data stream
+- sends, every 2 seconds, the current snapshot of that data to the GUI part of the server
+
+* 
+
+The GUI part will consist of a single HTML page that has two `<div>`:
+
+- one `<div>` that will contain the `16x16` grid of the calorimeter, where each cell contains the last energy reading
+- one `<div>` that contains the time evolution of the temperature for all the `raspberry` sensors (there are 3 of those.)
+
+*Note:* one can use [[https://godoc.org/gonum.org/v1/plot][gonum/plot]] to create plots.
+*Note:* one can also study this example on how to create plots: [[https://github.com/sbinet/go-web-examples/tree/master/07-go-web-plot-gonum-svg][web-plots]].
+*Note:* one can use a [[https://godoc.org/gonum.org/v1/plot/plotter#HeatMap][gonum/plot heatmap]] to create [[https://github.com/gonum/plot/blob/master/plotter/testdata/heatMap_golden.png][2D plots]].
 
 * Acknowledgements / resources
 
