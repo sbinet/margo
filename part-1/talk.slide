@@ -408,11 +408,11 @@ Create `$GOPATH/src/github.com/margo/ex-01/main.go` with the following content:
   $ `which ex-01` foo bar baz 01234 
   args: [/home/me/go/bin/ex-01 foo bar baz 01234]
 
-* Interlude: godoc
+* Interlude: go doc
 
-Browsing documentation is performed with `godoc`.
+Browsing documentation is performed with `go` `doc`.
 
-  $ godoc os | less
+  $ go doc os | less
 
   PACKAGE DOCUMENTATION
 
@@ -430,7 +430,7 @@ Browsing documentation is performed with `godoc`.
 
 * 
 
-  $ godoc os File | less
+  $ go doc os File | less
 
 
   type File struct {
@@ -462,13 +462,14 @@ Also available from:
 
 or locally:
 
+  $ go get golang.org/x/tools/cmd/godoc
   $ godoc -http=:8080
   $ open localhost:8080/pkg
 
 
 * ex-01 - II
 
-  $ godoc os Args
+  $ go doc os Args
 
   var Args []string
       Args hold the command-line arguments, starting with the program name.
@@ -508,7 +509,7 @@ Let's create a new `ex-02` program taking integers as arguments from the command
   $ ex-02 1 2 3 4 100 1.2
   **error** strconv.ParseInt: parsing "1.2": invalid syntax
 
-*Hint:* `godoc` `strconv`
+*Hint:* `go` `doc` `strconv`
 
 * ex-02 - a simple calculator
 
@@ -537,7 +538,7 @@ Let's modify `ex-02` to take an optional `-v` argument to enable a verbose mode,
   $ ex-02 1 2 3 4 100
   sum= 110
 
-*Hint:* `godoc` `flag`
+*Hint:* `go` `doc` `flag`
 *Hint:* beware, correctly handle the extra `-v` argument.
 
 
@@ -725,10 +726,10 @@ Let's create a new `extra-01` program which will open a text file and count word
   $ extra-01 $GOPATH/src/github.com/sbinet/margo/testdata/lorem-ipsum.txt
   69
 
-*Hint:* `godoc` `os` `Open`
-*Hint:* `godoc` `io` `EOF`
-*Hint:* `godoc` `bufio` `Scanner`
-*Hint:* `godoc` `strings` `Split`
+*Hint:* `go` `doc` `os` `Open`
+*Hint:* `go` `doc` `io` `EOF`
+*Hint:* `go` `doc` `bufio` `Scanner`
+*Hint:* `go` `doc` `strings` `Split`
 
 *Hint:* if it returns `70` you are not correctly handling empty strings.
 
@@ -760,8 +761,8 @@ Let's modify `extra-01` to display some general statistics:
   #5: "voluptate" (1)
 
 *Hint:* use a `map[string]int`
-*Hint:* `godoc` `sort` `Sort`
-*Hint:* `godoc` `sort` `Reverse`
+*Hint:* `go` `doc` `sort` `Sort`
+*Hint:* `go` `doc` `sort` `Reverse`
 
 * extra-01 - II (solution)
 
