@@ -211,7 +211,7 @@ This builds an executable named `hello`, and installs it under the `bin` directo
 
 	struct {
 		Name string
-		Age  int
+		Year int
 	}
 
 - arrays and slices
@@ -252,7 +252,7 @@ This builds an executable named `hello`, and installs it under the `bin` directo
 
 	type Person struct {
 		Name string
-		Age  int
+		Year int
 	}
 
 `Celsius` is a `float64` type.
@@ -299,10 +299,10 @@ And inside of functions:
 
 Other types
 
-    a := 0                        // int
-    b := true                     // boolean
-    f := 1.0                      // float64
-    p := Person{"Sébastien", 37}  // Person{Name string; Age int}
+    a := 0                         // int
+    b := true                      // boolean
+    f := 1.0                       // float64
+    p := Person{"Sébastien", 1980} // Person{Name string; Year int}
 
 * No implicit numeric conversion
 
