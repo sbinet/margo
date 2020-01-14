@@ -1,0 +1,106 @@
+Introduction to Go (part 8)
+MarGo Workshop
+
+Sébastien Binet
+CNRS/IN2P3/LPC
+binet@clermont.in2p3.fr
+@0xb1ns
+
+* Prelude
+
+* Prelude
+
+Sources and resources for this workshop are here:
+
+.link https://github.com/sbinet/margo
+
+
+License: BSD-3.
+
+* (WIP) Introduction to modules
+
+This hands-on session requires a Go version `Go>=1.13`:
+
+ $> go help mod
+ Go mod provides access to operations on modules.
+ [...]
+
+We will create a simple command that uses Go modules:
+
+ $> cd /some/where
+ $> mkdir mogule && cd mogule
+ $> go mod init github.com/margo/mogule
+ go: creating new go.mod: module github.com/margo/mogule
+ 
+ $> ls
+ go.mod
+
+ $> cat go.mod
+ module github.com/margo/mogule
+
+ go 1.14 
+
+* Adding a dependency
+
+ $> go get github.com/sbinet-vgo/api
+ go: finding versions for github.com/sbinet-vgo/api
+ go: finding versions for github.com/sbinet-vgo
+ go: github.com/sbinet-vgo/api upgrade => v1.0.0
+
+ $> cat go.mod 
+ module github.com/margo/mogule
+ 
+ go 1.14
+ 
+ require github.com/sbinet-vgo/api v1.0.0 // indirect
+ 
+ $> go doc github.com/sbinet-vgo/api.Greeter
+ package api // import "github.com/sbinet-vgo/api"
+ 
+ type Greeter struct{}
+ 
+ func (Greeter) Greet(name string) string
+
+* Edit mogule
+
+Create a new `main.go` file under `mogule` that uses this super API:
+
+.code _code/mogule-v1.go
+
+Build and run:
+
+ $> go build
+ $> ./mogule
+ 2020/01/14 20:47:20 Hello Bob
+
+* Life of an API
+
+Turns out `sbinet-vgo/api.Greeter` isn't such a great API: it's kind of rather tedious to create a value of type `api.Greeter` to just greet somebody.
+
+So `sbinet-vgo/api` decided to completely change that API and tag that new code as `v2.0.0`.
+
+Let's use that.
+
+ $> go get -u github.com/sbinet-vgo/api/v2
+ go: downloading github.com/sbinet-vgo/api/v2 v2.0.0
+ go: github.com/sbinet-vgo/api/v2 upgrade => v2.0.0
+
+That new API looks like this:
+
+ $> go doc github.com/sbinet-vgo/api/v2
+ 
+ package api // import "github.com/sbinet-vgo/api/v2"
+ 
+ func Welcome(name string) string
+
+* Life of an API - II
+
+Let's actually use it:
+
+.code _code/mogule-v2.go
+
+Build and run:
+
+ $> go build && ./mogule
+ 2020/01/14 20:55:42 Hello Bob!
+

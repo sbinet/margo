@@ -12,6 +12,7 @@ The slides are here:
 - [part 5 (a DAQ application)](https://talks.godoc.org/github.com/sbinet/margo/part-5/talk.slide)
 - [part 6 (a chat application)](https://talks.godoc.org/github.com/sbinet/margo/part-6/talk.slide)
 - [part 7 (biology)](https://talks.godoc.org/github.com/sbinet/margo/part-7/talk.slide)
+- [part 8 (modules)](https://talks.godoc.org/github.com/sbinet/margo/part-8/talk.slide)
 
 ## Bootstrapping the work environment
 
