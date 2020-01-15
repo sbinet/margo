@@ -4,7 +4,7 @@
 // For each incoming connection, it launches a goroutine that reads and decodes
 // JSON-encoded messages from the connection and prints them to standard
 // output.
-// It concurrently makes a connection the host and port specified by the -dial
+// It concurrently makes a connection to the host and port specified by the -dial
 // flag, reads lines from standard input, and writes JSON-encoded messages to
 // the network connection.
 //
