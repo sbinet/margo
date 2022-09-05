@@ -44,9 +44,9 @@ Go is a new, general-purpose programming language.
 - Version 1.1 released in May 2013
 - Version 1.2 released in December 2013
 - _[...]_
-- Version 1.11 released in August 2018
-- Version 1.12 released in February 2019
-- Version 1.13 released in February 2019
+- Version 1.17 released in August 2021
+- Version 1.18 released in February 2022
+- Version 1.19 released in August 2022
 
 .link https://golang.org
 
@@ -115,7 +115,7 @@ Build and format the files in the current directory:
   $ go build
   $ gofmt -w .
 
-Fetch and install `websocket`:
+Fetch and install the `websocket` package (in the current module):
 
   $ go get golang.org/x/net/websocket
 
@@ -167,6 +167,8 @@ For this tutorial, let us all use `"github.com/margo"`
 # Once you have chosen a namespace, create the required paths inside the `src` directory of your workspace:
 
   $ mkdir -p $GOPATH/src/github.com/margo
+  $ cd $GOPATH/src/github.com/margo
+  $ go mod init
 
 Create a `hello` directory in your namespace and copy `hello.go` there:
   
@@ -177,7 +179,7 @@ Create a `hello` directory in your namespace and copy `hello.go` there:
 
 Now you can build and install the `hello` program with the `go` tool:
 
-  $ go get github.com/margo/hello
+  $ go install github.com/margo/hello
 
 This builds an executable named `hello`, and installs it under the `bin` directory of your workspace.
 
@@ -399,7 +401,7 @@ Create `$GOPATH/src/github.com/margo/ex-01/main.go` with the following content:
 .code _code/ex-01.go
 
   ## build and install ex-01
-  $ go get github.com/margo/ex-01
+  $ go install github.com/margo/ex-01
   
   ## run ex-01:
   $ ex-01 foo bar baz 01234
@@ -462,7 +464,7 @@ Also available from:
 
 or locally:
 
-  $ go get golang.org/x/tools/cmd/godoc
+  $ go install golang.org/x/tools/cmd/godoc@latest
   $ godoc -http=:8080
   $ open localhost:8080/pkg
 
@@ -498,7 +500,7 @@ Solution on the next slide...
 Let's create a new `ex-02` program taking integers as arguments from the command line and returning their sum:
 
   ## build+install ex-02
-  $ go get github.com/margo/ex-02
+  $ go install github.com/margo/ex-02
   
   $ ex-02 1 2 3 4 100
   sum= 110
@@ -677,7 +679,7 @@ A typical example is the `compress/gzip.NewReader` function which takes an `io.R
 
 .code _code/gz-r.go /START OMIT/,/END OMIT/
 
- $ cat $GOPATH/src/github.com/sbinet/margo/testdata/data.gz | my-gunzip
+ $ cat $GOPATH/pkg/mod/github.com/sbinet/margo@v*/testdata/data.gz | my-gunzip
 
 * ex-04 - V
 
@@ -723,7 +725,7 @@ Most of this tutorial has been extracted or adapted from:
 
 Let's create a new `extra-01` program which will open a text file and count words in it:
 
-  $ extra-01 $GOPATH/src/github.com/sbinet/margo/testdata/lorem-ipsum.txt
+  $ extra-01 $GOPATH/pkg/mod/github.com/sbinet/margo@v*/testdata/lorem-ipsum.txt
   69
 
 *Hint:* `go` `doc` `os` `Open`

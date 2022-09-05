@@ -17,7 +17,7 @@ Sources and resources for this workshop are here:
 
 License: BSD-3.
 
-* (WIP) Introduction to modules
+* Introduction to modules
 
 This hands-on session requires a Go version `Go>=1.13`:
 
@@ -38,19 +38,18 @@ We will create a simple command that uses Go modules:
  $> cat go.mod
  module github.com/margo/mogule
 
- go 1.14 
+ go 1.19
 
 * Adding a dependency
 
  $> go get github.com/sbinet-vgo/api
- go: finding versions for github.com/sbinet-vgo/api
- go: finding versions for github.com/sbinet-vgo
- go: github.com/sbinet-vgo/api upgrade => v1.0.0
+ go: downloading github.com/sbinet-vgo/api v1.0.0
+ go: added github.com/sbinet-vgo/api v1.0.0
 
  $> cat go.mod 
  module github.com/margo/mogule
  
- go 1.14
+ go 1.19
  
  require github.com/sbinet-vgo/api v1.0.0 // indirect
  
@@ -71,19 +70,18 @@ Build and run:
 
  $> go build
  $> ./mogule
- 2020/01/14 20:47:20 Hello Bob
+ 2022/08/16 20:47:20 Hello Bob
 
 * Life of an API
 
 Turns out `sbinet-vgo/api.Greeter` isn't such a great API: it's kind of rather tedious to create a value of type `api.Greeter` to just greet somebody.
 
-So `sbinet-vgo/api` decided to completely change that API and tag that new code as `v2.0.0`.
+So `sbinet-vgo/api` decided to completely change that API and tag that new code as `v2.0.1`.
 
 Let's use that.
 
  $> go get -u github.com/sbinet-vgo/api/v2
- go: downloading github.com/sbinet-vgo/api/v2 v2.0.0
- go: github.com/sbinet-vgo/api/v2 upgrade => v2.0.0
+ go: downloading github.com/sbinet-vgo/api/v2 v2.0.1
 
 That new API looks like this:
 
@@ -102,5 +100,13 @@ Let's actually use it:
 Build and run:
 
  $> go build && ./mogule
- 2020/01/14 20:55:42 Hello Bob!
+ 2022/08/16 20:55:42 Hello Bob!
+
+* More pointers
+
+.link https://go.dev/blog/using-go-modules
+.link https://go.dev/blog/migrating-to-go-modules
+.link https://go.dev/blog/publishing-go-modules
+.link https://go.dev/blog/v2-go-modules
+.link https://go.dev/blog/module-compatibility
 

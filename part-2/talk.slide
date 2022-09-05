@@ -257,7 +257,7 @@ This example uses the `"golang.org/x/tour/tree"` package, which defines the type
     Right *Tree
  }
 
-We need to install it:
+We need to install it (and specify it as a dependency):
 
  $> go get golang.org/x/tour/tree
 

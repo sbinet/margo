@@ -66,7 +66,7 @@ CGO_ENABLED="1"
 (on other platforms/architectures, the output might differ
 slightly. The important env.vars. are `GOPATH` and `GOROOT`.)
 
-### Testing `go get`
+### Testing `go`
 
 Now that the `go` tool is correctly setup, let's try to fetch some
 code.
@@ -77,12 +77,13 @@ For this part, you'll need the following tools installed to actually retrieve th
 Without further ado:
 
 ```sh
-$ go get -u -v github.com/sbinet/margo/cmd/margo-hello
-github.com/sbinet/margo (download)
+$ go install -v github.com/sbinet/margo/cmd/margo-hello@latest
+go: downloading github.com/sbinet/margo v0.0.0-20200115082936-ccffedad4555
+github.com/sbinet/margo/cmd/margo-hello
 ```
 
-`go get` downloaded (cloned, in `git` speak) the whole
-`github.com/sbinet/margo` repository (under `$GOPATH/src`) and
+`go install` downloaded (cloned, in `git` speak) the whole
+`github.com/sbinet/margo` repository (under `$GOPATH/pkg/mod`) and
 compiled the `margo-hello` command.
 As the compilation was successful, it also installed the `margo-hello`
 command under `$GOPATH/bin`.

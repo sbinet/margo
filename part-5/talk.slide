@@ -189,7 +189,7 @@ One just has to replace the decoder's input (_i.e._ `os.File`) with this new `ne
 
 To make sure the new program works, you can run:
 
- $> go get github.com/sbinet/margo/daq/cmd/daq-srv
+ $> go install github.com/sbinet/margo/daq/cmd/daq-srv
  $> daq-srv -listen localhost:8000
 
 and tell your programm to dial that address:

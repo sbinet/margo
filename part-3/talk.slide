@@ -49,7 +49,7 @@ Inside this new package, put 3 files: `main.go`, `my-cgo-lib.h`, `my-cgo-lib.c`.
 
 And build/install like so:
 
-  $> go get -v github.com/margo/my-cgo
+  $> go install -v github.com/margo/my-cgo
   github.com/margo/my-cgo
   
   $> my-cgo
