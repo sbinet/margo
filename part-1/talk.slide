@@ -39,7 +39,7 @@ Go is a new, general-purpose programming language.
 
 - Project starts at Google in 2007 (by Griesemer, Pike, Thompson)
 - Open source release in November 2009
-- More than 1.4k contributors have joined the project
+- More than 1.8k contributors have joined the project
 - Version 1.0 released in March 2012
 - Version 1.1 released in May 2013
 - Version 1.2 released in December 2013
@@ -461,6 +461,7 @@ Also available from:
 .link https://golang.org/pkg/os
 
 .link https://godoc.org/os
+.link https://pkg.go.dev/os
 
 or locally:
 
