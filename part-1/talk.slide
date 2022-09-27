@@ -602,10 +602,17 @@ Let's create a new `rot13` package:
 
 - in that `rot13` package, create `rot13_test.go` with the following content:
 
-.code _code/rot13_test.go /^func TestRot13/,/^}/ HLxxx
+.code _code/rot13_test.go /STARTTESTCASES OMIT/,/ENDTESTCASES OMIT/ HLxxx
 
 
 * ex-04 - rot13 - IV
+
+- in that `rot13` package, create `rot13_test.go` with the following content:
+
+.code _code/rot13_test.go /^func TestRot13/,/^}/ HLxxx
+
+
+* ex-04 - rot13 - V
 
 - still in `rot13`, create `rot13.go` with the following content:
 

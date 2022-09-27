@@ -7,21 +7,40 @@ import (
 	"testing" // HLxxx
 )
 
+type testCase struct {
+	text []byte
+	want []byte
+}
+
 // ENDIMPORT OMIT
 
-func TestRot13(t *testing.T) {
-	type testCase struct {
-		str  []byte
-		want []byte
-	}
-	cases := []testCase{
-		{str: []byte("Lbh penpxrq gur pbqr!"), want: []byte("You cracked the code!")},
-		{str: []byte("hello"), want: []byte("uryyb")},
-	}
+// STARTTESTCASES OMIT
 
+var cases = []testCase{
+	{
+		text: []byte("Lbh penpxrq gur pbqr!"),
+		want: []byte("You cracked the code!"),
+	},
+	{
+		text: []byte("hello"),
+		want: []byte("uryyb"),
+	},
+	{
+		text: []byte("abcdefghijklmnopqrstuvwxyz"),
+		want: []byte("nopqrstuvwxyzabcdefghijklm"),
+	},
+	{
+		text: []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZ"),
+		want: []byte("NOPQRSTUVWXYZABCDEFGHIJKLM"),
+	},
+}
+
+// ENDTESTCASES OMIT
+
+func TestRot13(t *testing.T) {
 	for _, table := range cases {
-		o := make([]byte, len(table.str))
-		for i, b := range table.str {
+		o := make([]byte, len(table.text))
+		for i, b := range table.text {
 			o[i] = rot13(b) // HLxxx
 		}
 
