@@ -1,6 +1,11 @@
 margo
 =====
 
+**/!\ `margo` migrated to [Codeberg](https://codeberg.org/sbinet/margo)**
+
+---
+
+
 `margo` (the Marvelous Go tutorial) is a simple repository holding sources for an introduction to `Go`.
 
 The slides are here:
